@@ -1,0 +1,11 @@
+/Other/asmjit.dll
+/Other/c10.dll
+/Other/caffe2_detectron_ops.dll
+/Other/caffe2_module_test_dynamic.dll
+/Other/fbgemm.dll
+/Other/libiomp5md.dll
+/Other/libiompstubs5md.dll
+/Other/torch.dll
+/Other/torch_cpu.dll
+/Other/torch_global_deps.dll
+/Other/uv.dll
