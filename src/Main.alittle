@@ -55,7 +55,9 @@ public async static __Module_Setup(ALittle.DisplayLayout layer_group, ALittle.Co
         ALittle.File_SetCurrentPath(path);
     }
 
-    alittle.RequireFromPaths(script_base_path, "Model/", paths("src/Model"));
+    var require = new ALittle.Require();
+    require.AddPaths(script_base_path, "Model/", paths("src/Model"));
+    require.Start();
 
 	alittle.Require(script_base_path, "GCenter");
 	g_GCenter.Setup();
@@ -97,7 +99,9 @@ public await static __Plugin_Setup(ALittle.ControlSystem control, string module_
         lua.require("deeplearning");
     }
 
-    alittle.RequireFromPaths(script_base_path, "Mnist/", paths("src/Model"));
+    var require = new ALittle.Require();
+    require.AddPaths(script_base_path, "Mnist/", paths("src/Model"));
+    require.Start();
 }
 
 // 插件入口函数

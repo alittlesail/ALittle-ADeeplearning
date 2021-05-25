@@ -72,3 +72,8 @@ public class DeeplearningSpeechModel : DeeplearningModel
     // 返回拼音
     public fun Output(string file_path) : string {}
 }
+
+// DQN
+public class DeeplearningDQNModel : DeeplearningModel
+{
+}

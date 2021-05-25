@@ -41,8 +41,13 @@ function ADeeplearning.__Module_Setup(layer_group, control, module_base_path, sc
 		require("deeplearning")
 		ALittle.File_SetCurrentPath(path)
 	end
-	RequireFromPaths(script_base_path, "Model/", {"CommonTrainLayout.alittle", "XorLayout.alittle", "SpeechLayout.alittle"
-		, "MnistLayout.alittle"})
+	local require = ALittle.Require()
+	require:AddPaths(script_base_path, "Model/", {{"CartPoleLayout","CommonTrainLayout"}
+		,{"CommonTrainLayout"}
+		,{"MnistLayout","CommonTrainLayout"}
+		,{"SpeechLayout","CommonTrainLayout"}
+		,{"XorLayout","CommonTrainLayout"}})
+	require:Start()
 	Require(script_base_path, "GCenter")
 	ADeeplearning.g_GCenter:Setup()
 end
@@ -74,8 +79,13 @@ function ADeeplearning.__Plugin_Setup(control, module_base_path, script_base_pat
 		package.cpath = package.cpath .. ";./" .. module_base_path .. "Other/?.dll"
 		require("deeplearning")
 	end
-	RequireFromPaths(script_base_path, "Mnist/", {"CommonTrainLayout.alittle", "XorLayout.alittle", "SpeechLayout.alittle"
-		, "MnistLayout.alittle"})
+	local require = ALittle.Require()
+	require:AddPaths(script_base_path, "Mnist/", {{"CartPoleLayout","CommonTrainLayout"}
+		,{"CommonTrainLayout"}
+		,{"MnistLayout","CommonTrainLayout"}
+		,{"SpeechLayout","CommonTrainLayout"}
+		,{"XorLayout","CommonTrainLayout"}})
+	require:Start()
 end
 
 function ADeeplearning.__Plugin_Shutdown()
