@@ -38,6 +38,7 @@ protected class CartPoleLayout : ALittle.DisplayLayout
     private double _pole_theta_dot = 0;
 
 	private double _theta_threshold_radians = 1.570796325;
+    private double _learn_theta_threshold_radians = 1.570796325;
 	private double _x_threshold = 5;
 
     public fun TCtor()
@@ -45,6 +46,7 @@ protected class CartPoleLayout : ALittle.DisplayLayout
         this._model_path = g_ModuleBasePath.."Other/cartpole.model";
         this._model = new deeplearning.DeeplearningDQNModel(4, 2, 100, 2000);
 
+        this._learn_theta_threshold_radians = 12 * 2 * 3.14159265 / 360;
         // 计算总质量
         this._total_mass = this._masscart + this._masspole;
         // 计算杆的重心
@@ -128,6 +130,14 @@ protected class CartPoleLayout : ALittle.DisplayLayout
         next_state[3] = this._pole_theta;
         next_state[4] = this._pole_theta_dot;
 
+        var r1 = (this._x_threshold - ALittle.Math_Abs(this._cart_x)) / this._x_threshold - 0.8;
+        var r2 = (this._learn_theta_threshold_radians - ALittle.Math_Abs(this._pole_theta)) / this._learn_theta_threshold_radians - 0.5;
+        var reward = r1 + r2;
+
+        this._model.SaveTransition(state, action, reward, next_state);
+        for (var i = 1; i <= 32; 1)
+            this._model.Learn();
+
         if (done)
         {
             if (this._loop_frame != null)
@@ -144,15 +154,6 @@ protected class CartPoleLayout : ALittle.DisplayLayout
             this._loop_frame.Start();
 
             this._start_button.disabled = false;
-        }
-        else
-        {
-            var r1 = (this._x_threshold - ALittle.Math_Abs(this._cart_x)) / this._x_threshold - 0.8;
-            var r2 = (this._theta_threshold_radians - ALittle.Math_Abs(this._pole_theta)) / this._theta_threshold_radians - 0.5;
-        	var reward = r1 + r2;
-
-            this._model.SaveTransition(state, action, reward, next_state);
-            this._model.Learn();
         }
     }
 
@@ -183,7 +184,7 @@ protected class CartPoleLayout : ALittle.DisplayLayout
         theta_dot = theta_dot + tau * thetaacc;
 
         var done = x < -this._x_threshold || x > this._x_threshold || theta < -this._theta_threshold_radians || theta > this._theta_threshold_radians;
-
+        
         this._cart_x = x;
         this._cart_x_dot = x_dot;
         this._pole_theta = theta;

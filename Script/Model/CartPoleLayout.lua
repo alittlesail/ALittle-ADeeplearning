@@ -32,12 +32,14 @@ function ADeeplearning.CartPoleLayout:Ctor()
 	___rawset(self, "_pole_theta", 0)
 	___rawset(self, "_pole_theta_dot", 0)
 	___rawset(self, "_theta_threshold_radians", 1.570796325)
+	___rawset(self, "_learn_theta_threshold_radians", 1.570796325)
 	___rawset(self, "_x_threshold", 5)
 end
 
 function ADeeplearning.CartPoleLayout:TCtor()
 	self._model_path = ADeeplearning.g_ModuleBasePath .. "Other/cartpole.model"
 	self._model = deeplearning.DeeplearningDQNModel(4, 2, 100, 2000)
+	self._learn_theta_threshold_radians = 12 * 2 * 3.14159265 / 360
 	self._total_mass = self._masscart + self._masspole
 	self._polemass_length = self._masspole * self._polemass_length
 	self:GameInit(0)
@@ -102,6 +104,16 @@ function ADeeplearning.CartPoleLayout:HandleFrame(frame_time)
 	next_state[2] = self._cart_x_dot
 	next_state[3] = self._pole_theta
 	next_state[4] = self._pole_theta_dot
+	local r1 = (self._x_threshold - ALittle.Math_Abs(self._cart_x)) / self._x_threshold - 0.8
+	local r2 = (self._learn_theta_threshold_radians - ALittle.Math_Abs(self._pole_theta)) / self._learn_theta_threshold_radians - 0.5
+	local reward = r1 + r2
+	self._model:SaveTransition(state, action, reward, next_state)
+	local i = 1
+	while true do
+		if not(i <= 32) then break end
+		self._model:Learn()
+		i = i+(1)
+	end
 	if done then
 		if self._loop_frame ~= nil then
 			self._loop_frame:Stop()
@@ -114,12 +126,6 @@ function ADeeplearning.CartPoleLayout:HandleFrame(frame_time)
 		self._loop_frame = ALittle.LoopFrame(Lua.Bind(self.HandleFrame, self))
 		self._loop_frame:Start()
 		self._start_button.disabled = false
-	else
-		local r1 = (self._x_threshold - ALittle.Math_Abs(self._cart_x)) / self._x_threshold - 0.8
-		local r2 = (self._theta_threshold_radians - ALittle.Math_Abs(self._pole_theta)) / self._theta_threshold_radians - 0.5
-		local reward = r1 + r2
-		self._model:SaveTransition(state, action, reward, next_state)
-		self._model:Learn()
 	end
 end
 
