@@ -1,21 +1,6 @@
 
 namespace ADeeplearning;
 
-public class CartPoleTrainLayout : CommonTrainLayout
-{
-    private deeplearning.DeeplearningDQNModel _model;
-
-    public get model() : deeplearning.DeeplearningModel
-    {
-        if (this._model == null)
-        {
-            this._model = new deeplearning.DeeplearningDQNModel();
-            this._model_path = g_ModuleBasePath.."Other/cartpole.model";
-        }
-        return this._model;
-    }
-}
-
 enum CartPoleAction
 {
     LEFT = 0;	// 向左
@@ -24,9 +9,7 @@ enum CartPoleAction
 
 protected class CartPoleLayout : ALittle.DisplayLayout
 {
-	private ADeeplearning.CartPoleTrainLayout _train;
-
-    private deeplearning.DeeplearningMnistModel _model;
+    private deeplearning.DeeplearningDQNModel _model;
 
     private string _model_path;
     private bool _loaded = false;
@@ -44,7 +27,7 @@ protected class CartPoleLayout : ALittle.DisplayLayout
     private double _masscart = 1.0;		// 车的质量
     private double _masspole = 0.5;		// 杆的质量
     private double _total_mass = 0;		// 总质量
-    private double _pole_length = 4;	// 杆重心的位置
+    private double _pole_length = 5;	// 杆重心的位置
     private double _polemass_length = 0;	// 杆重心
     private double _force_mag = 10.0;
 
@@ -54,22 +37,20 @@ protected class CartPoleLayout : ALittle.DisplayLayout
     private double _pole_theta = 0;		// 杆的角度
     private double _pole_theta_dot = 0;
 
+	private double _theta_threshold_radians = 1.570796325;
+	private double _x_threshold = 5;
+
     public fun TCtor()
     {
-        this._train.AddEventListener(this, this.HandleTrainChanged);
-
-        this._model_path = g_ModuleBasePath.."Other/mnist.model";
-        this._model = new deeplearning.DeeplearningMnistModel();
+        this._model_path = g_ModuleBasePath.."Other/cartpole.model";
+        this._model = new deeplearning.DeeplearningDQNModel(4, 2, 100, 2000);
 
         // 计算总质量
         this._total_mass = this._masscart + this._masspole;
         // 计算杆的重心
         this._polemass_length = this._masspole * this._polemass_length;
-    }
-
-    private fun HandleTrainChanged(ALittle.UIChangedEvent event)
-    {
-        this._model.Load(this._model_path);
+        // 初始化画面和数据
+        this.GameInit(0);
     }
 
     private fun HandleStartGameClick(ALittle.UIClickEvent event)
@@ -80,7 +61,7 @@ protected class CartPoleLayout : ALittle.DisplayLayout
             this._loaded = true;
         }
 
-        this.GameInit(ALittle.Math_RandomDouble(-10, 10));
+        this.GameInit(0);
 
         if (this._loop_frame != null)
             this._loop_frame.Stop();
@@ -88,6 +69,21 @@ protected class CartPoleLayout : ALittle.DisplayLayout
         this._loop_frame.Start();
 
         this._start_button.disabled = true;
+    }
+
+    private fun HandleStopGameClick(ALittle.UIClickEvent event)
+    {
+        if (this._loaded) this._model.Save(this._model_path);
+
+        this.GameInit(0);
+
+        if (this._loop_frame != null)
+        {
+            this._loop_frame.Stop();
+            this._loop_frame = null;
+        }
+
+        this._start_button.disabled = false;
     }
 
     private fun GameInit(double angle)
@@ -105,6 +101,12 @@ protected class CartPoleLayout : ALittle.DisplayLayout
 
     private fun HandleFrame(int frame_time)
     {
+        var state = new List<double>();
+        state[1] = this._cart_x;
+        state[2] = this._cart_x_dot;
+        state[3] = this._pole_theta;
+        state[4] = this._pole_theta_dot;
+
         var action = this._action;
         if (this._self_play.selected)
         {
@@ -115,10 +117,16 @@ protected class CartPoleLayout : ALittle.DisplayLayout
         }
         else
         {
-            // 这里机器人玩
+            action = this._model.ChooseAction(state, 9);
         }
 
-        var x, degree, done = this.GameRun(action, frame_time);
+        var done = this.GameRun(action, frame_time);
+
+        var next_state = new List<double>();
+        next_state[1] = this._cart_x;
+        next_state[2] = this._cart_x_dot;
+        next_state[3] = this._pole_theta;
+        next_state[4] = this._pole_theta_dot;
 
         if (done)
         {
@@ -128,13 +136,29 @@ protected class CartPoleLayout : ALittle.DisplayLayout
                 this._loop_frame = null;
             }
 
+            this.GameInit(0);
+
+            if (this._loop_frame != null)
+                this._loop_frame.Stop();
+            this._loop_frame = new ALittle.LoopFrame(bind(this.HandleFrame, this));
+            this._loop_frame.Start();
+
             this._start_button.disabled = false;
+        }
+        else
+        {
+            var r1 = (this._x_threshold - ALittle.Math_Abs(this._cart_x)) / this._x_threshold - 0.8;
+            var r2 = (this._theta_threshold_radians - ALittle.Math_Abs(this._pole_theta)) / this._theta_threshold_radians - 0.5;
+        	var reward = r1 + r2;
+
+            this._model.SaveTransition(state, action, reward, next_state);
+            this._model.Learn();
         }
     }
 
     // 输入操作，action为0表示不动，为1表示向左走，action为2表示向右走
-    // 返回值，x坐标，倾斜角，游戏是否结束
-    private fun GameRun(int action, int frame_time) : double, double, bool
+    // 返回值，游戏是否结束
+    private fun GameRun(int action, int frame_time) : bool
     {
         this._action = action;
         var x = this._cart_x;
@@ -158,9 +182,7 @@ protected class CartPoleLayout : ALittle.DisplayLayout
         theta = theta + tau * theta_dot;
         theta_dot = theta_dot + tau * thetaacc;
 
-        var theta_threshold_radians = 90 * 2 * 3.14159265 / 360;
-        var x_threshold = 3;
-        var done = x < -x_threshold || x > x_threshold || theta < -theta_threshold_radians || theta > theta_threshold_radians;
+        var done = x < -this._x_threshold || x > this._x_threshold || theta < -this._theta_threshold_radians || theta > this._theta_threshold_radians;
 
         this._cart_x = x;
         this._cart_x_dot = x_dot;
@@ -169,7 +191,7 @@ protected class CartPoleLayout : ALittle.DisplayLayout
 
         this.GameRender();
 
-        return this._cart_x, this._pole_theta, done;
+        return done;
     }
 
     // 更新界面
