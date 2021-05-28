@@ -96,7 +96,10 @@ public await static __Plugin_Setup(ALittle.ControlSystem control, string module_
 	if (ALittle.System_GetPlatform() == "Windows")
 	{
 		package.cpath = package.cpath..";./"..module_base_path.."Other/?.dll";
+        var path = ALittle.File_GetCurrentPath();
+        ALittle.File_SetCurrentPath(path.."/"..module_base_path.."Other");
         lua.require("deeplearning");
+        ALittle.File_SetCurrentPath(path);
     }
 
     var require = new ALittle.Require();

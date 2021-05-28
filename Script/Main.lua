@@ -42,7 +42,7 @@ function ADeeplearning.__Module_Setup(layer_group, control, module_base_path, sc
 		ALittle.File_SetCurrentPath(path)
 	end
 	local require = ALittle.Require()
-	require:AddPaths(script_base_path, "Model/", {{"CartPoleLayout","CommonTrainLayout"}
+	require:AddPaths(script_base_path, "Model/", {{"CartPoleLayout"}
 		,{"CommonTrainLayout"}
 		,{"MnistLayout","CommonTrainLayout"}
 		,{"SpeechLayout","CommonTrainLayout"}
@@ -77,10 +77,13 @@ function ADeeplearning.__Plugin_Setup(control, module_base_path, script_base_pat
 	ADeeplearning.g_Control:RegisterPlugin("AUIPlugin", ADeeplearning.g_AUIPluinControl)
 	if ALittle.System_GetPlatform() == "Windows" then
 		package.cpath = package.cpath .. ";./" .. module_base_path .. "Other/?.dll"
+		local path = ALittle.File_GetCurrentPath()
+		ALittle.File_SetCurrentPath(path .. "/" .. module_base_path .. "Other")
 		require("deeplearning")
+		ALittle.File_SetCurrentPath(path)
 	end
 	local require = ALittle.Require()
-	require:AddPaths(script_base_path, "Mnist/", {{"CartPoleLayout","CommonTrainLayout"}
+	require:AddPaths(script_base_path, "Mnist/", {{"CartPoleLayout"}
 		,{"CommonTrainLayout"}
 		,{"MnistLayout","CommonTrainLayout"}
 		,{"SpeechLayout","CommonTrainLayout"}
