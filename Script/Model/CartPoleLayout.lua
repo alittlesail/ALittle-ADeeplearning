@@ -96,7 +96,11 @@ function ADeeplearning.CartPoleLayout:HandleFrame(frame_time)
 			action = 1
 		end
 	else
-		action = self._model:ChooseAction(state, 9)
+		if ALittle.Math_RandomInt(1, 10) <= 9 then
+			action = self._model:ChooseAction(state)
+		else
+			action = ALittle.Math_RandomInt(0, 1)
+		end
 	end
 	local done = self:GameRun(action, frame_time)
 	local next_state = {}

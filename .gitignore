@@ -9,3 +9,5 @@
 /Other/torch_cpu.dll
 /Other/torch_global_deps.dll
 /Other/uv.dll
+/Other/fbjni.dll
+/Other/pytorch_jni.dll

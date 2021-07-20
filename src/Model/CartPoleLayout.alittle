@@ -119,7 +119,10 @@ protected class CartPoleLayout : ALittle.DisplayLayout
         }
         else
         {
-            action = this._model.ChooseAction(state, 9);
+            if (ALittle.Math_RandomInt(1, 10) <= 9)
+            	action = this._model.ChooseAction(state);
+            else
+            	action = ALittle.Math_RandomInt(0, 1);
         }
 
         var done = this.GameRun(action, frame_time);
