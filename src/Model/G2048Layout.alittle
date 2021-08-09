@@ -36,6 +36,13 @@ protected class G2048Layout : ALittle.DisplayLayout
 
     private fun HandleTrainChanged(ALittle.UIChangedEvent event)
     {
+        this._model.Load(this._model_path);
+    }
+
+    private fun HandleCalcAIClick(ALittle.UIChangedEvent event)
+    {
+        this._model.Play2048(this._model.PlayAI());
+        this.UpdateText();
     }
 
     private fun HandleCalcLeftClick(ALittle.UIClickEvent event)

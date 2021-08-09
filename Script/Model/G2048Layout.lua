@@ -44,6 +44,12 @@ function ADeeplearning.G2048Layout:TCtor()
 end
 
 function ADeeplearning.G2048Layout:HandleTrainChanged(event)
+	self._model:Load(self._model_path)
+end
+
+function ADeeplearning.G2048Layout:HandleCalcAIClick(event)
+	self._model:Play2048(self._model:PlayAI())
+	self:UpdateText()
 end
 
 function ADeeplearning.G2048Layout:HandleCalcLeftClick(event)

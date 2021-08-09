@@ -123,6 +123,8 @@ public class Deeplearning2048Model : DeeplearningDqnCnnModel
     public fun Restart2048() {}
 
     public fun Play2048(int action) {}
+    // 返回action
+    public fun PlayAI() : int {}
 
     public fun Get2048(int row, int col) : int {}
 
