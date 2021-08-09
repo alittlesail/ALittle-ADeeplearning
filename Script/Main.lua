@@ -44,6 +44,7 @@ function ADeeplearning.__Module_Setup(layer_group, control, module_base_path, sc
 	local require = ALittle.Require()
 	require:AddPaths(script_base_path, "Model/", {{"CartPoleLayout"}
 		,{"CommonTrainLayout"}
+		,{"G2048Layout","CommonTrainLayout"}
 		,{"MnistLayout","CommonTrainLayout"}
 		,{"SpeechLayout","CommonTrainLayout"}
 		,{"XorLayout","CommonTrainLayout"}})
@@ -85,6 +86,7 @@ function ADeeplearning.__Plugin_Setup(control, module_base_path, script_base_pat
 	local require = ALittle.Require()
 	require:AddPaths(script_base_path, "Mnist/", {{"CartPoleLayout"}
 		,{"CommonTrainLayout"}
+		,{"G2048Layout","CommonTrainLayout"}
 		,{"MnistLayout","CommonTrainLayout"}
 		,{"SpeechLayout","CommonTrainLayout"}
 		,{"XorLayout","CommonTrainLayout"}})
