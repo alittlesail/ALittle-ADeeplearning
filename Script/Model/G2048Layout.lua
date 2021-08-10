@@ -39,6 +39,7 @@ function ADeeplearning.G2048Layout:TCtor()
 	self._train:AddEventListener(___all_struct[958494922], self, self.HandleTrainChanged)
 	self._model_path = ADeeplearning.g_ModuleBasePath .. "Other/g2048.model"
 	self._model = deeplearning.Deeplearning2048Model(4, 4, 2000)
+	self._model:Load(self._model_path)
 	self._model:Restart2048()
 	self:UpdateText()
 end
