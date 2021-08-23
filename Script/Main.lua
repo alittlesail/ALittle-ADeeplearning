@@ -46,7 +46,6 @@ function ADeeplearning.__Module_Setup(layer_group, control, module_base_path, sc
 		,{"CommonTrainLayout"}
 		,{"G2048Layout","CommonTrainLayout"}
 		,{"MnistLayout","CommonTrainLayout"}
-		,{"SpeechLayout","CommonTrainLayout"}
 		,{"XorLayout","CommonTrainLayout"}})
 	require:Start()
 	Require(script_base_path, "GCenter")
@@ -88,7 +87,6 @@ function ADeeplearning.__Plugin_Setup(control, module_base_path, script_base_pat
 		,{"CommonTrainLayout"}
 		,{"G2048Layout","CommonTrainLayout"}
 		,{"MnistLayout","CommonTrainLayout"}
-		,{"SpeechLayout","CommonTrainLayout"}
 		,{"XorLayout","CommonTrainLayout"}})
 	require:Start()
 end
