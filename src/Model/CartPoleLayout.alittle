@@ -9,7 +9,7 @@ enum CartPoleAction
 
 protected class CartPoleLayout : ALittle.DisplayLayout
 {
-    private deeplearning.DeeplearningDqnDnnModel _model;
+    private deeplearning.DeeplearningDuelingDqnModel _model;
 
     private string _model_path;
     private bool _loaded = false;
@@ -44,7 +44,7 @@ protected class CartPoleLayout : ALittle.DisplayLayout
     public fun TCtor()
     {
         this._model_path = g_ModuleBasePath.."Other/cartpole.model";
-        this._model = new deeplearning.DeeplearningDqnDnnModel(4, 2, 100, 2000);
+        this._model = new deeplearning.DeeplearningDuelingDqnModel(4, 2, 100, 2000);
 
         this._learn_theta_threshold_radians = 12 * 2 * 3.14159265 / 360;
         // 计算总质量

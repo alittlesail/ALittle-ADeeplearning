@@ -38,7 +38,7 @@ end
 
 function ADeeplearning.CartPoleLayout:TCtor()
 	self._model_path = ADeeplearning.g_ModuleBasePath .. "Other/cartpole.model"
-	self._model = deeplearning.DeeplearningDqnDnnModel(4, 2, 100, 2000)
+	self._model = deeplearning.DeeplearningDuelingDqnModel(4, 2, 100, 2000)
 	self._learn_theta_threshold_radians = 12 * 2 * 3.14159265 / 360
 	self._total_mass = self._masscart + self._masspole
 	self._polemass_length = self._masspole * self._polemass_length
