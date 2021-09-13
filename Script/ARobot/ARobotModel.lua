@@ -36,11 +36,11 @@ function ADeeplearning.ARobotModel:GetCurTrainCount()
 end
 
 function ADeeplearning.ARobotModel:GetTrainRound()
-	return self._cur_right_count
+	return self._train_round
 end
 
 function ADeeplearning.ARobotModel:GetCurRightCount()
-	return self._train_round
+	return self._cur_right_count
 end
 
 function ADeeplearning.ARobotModel:TrainCountPerFrame()
@@ -50,10 +50,14 @@ end
 function ADeeplearning.ARobotModel:Train()
 	if self._cur_train_count >= self._total_train_count then
 		self._cur_train_count = 0
+		self._cur_right_count = 0
 		self._train_round = self._train_round + (1)
 	end
 	local loss, right = self:TrainImpl(self._cur_train_count + 1)
 	self._cur_train_count = self._cur_train_count + (1)
+	if right then
+		self._cur_right_count = self._cur_right_count + (1)
+	end
 	return loss, right
 end
 

@@ -34,6 +34,8 @@ public class XorModel : ARobotModel
         this._out = this._fc2.Calc(x);
         this._loss = this._out.Subtraction(output).Square();
     }
+    // 每帧训练多少次
+    public fun TrainCountPerFrame() : int { return 10; }
        
     // 训练
     public fun TrainImpl(int index) : double, bool

@@ -86,6 +86,7 @@ public class MnistModel : ARobotModel
 
         this._mnist.GetImage(index - 1, this._input.GetInput());
         var label = this._mnist.GetLabel(index - 1);
+        ALittle.Log(label);
 
         this._output.Update(label);
         var right = this._out.AsVectorAndArgmax() == label;
@@ -99,7 +100,7 @@ public class MnistModel : ARobotModel
     {
         this._session.Reset();
 
-        this._surface.SetImage(surface_address);
+        this._surface.SetImage(surface_address, 28, 28);
         this._surface.GetImage(this._input.GetInput());
         return this._out.AsVectorAndArgmax();
     }
@@ -114,6 +115,7 @@ public class MnistTrainLayout : CommonTrainLayout
         if (this._model == null)
         {
             this._model = new MnistModel();
+            this._model_path = g_ModuleBasePath.."Other/mnist.model";
             this._model.SetMnistRoot(g_ModuleBasePath.."Data");
         }
         return this._model;

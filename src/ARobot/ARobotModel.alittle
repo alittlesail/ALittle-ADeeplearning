@@ -23,9 +23,9 @@ public class ARobotModel
     // 当前轮数据总数
     public fun GetCurTrainCount() : int { return this._cur_train_count; }
     // 训练的轮数
-    public fun GetTrainRound() : int { return this._cur_right_count; }
+    public fun GetTrainRound() : int { return this._train_round; }
     // 判定正确的数量
-    public fun GetCurRightCount() : int { return this._train_round; }
+    public fun GetCurRightCount() : int { return this._cur_right_count; }
     // 每帧训练多少次
     public fun TrainCountPerFrame() : int { return 1; }
     // 训练
@@ -34,11 +34,13 @@ public class ARobotModel
         if (this._cur_train_count >= this._total_train_count)
         {
             this._cur_train_count = 0;
+            this._cur_right_count = 0;
             this._train_round += 1;
         }
 
         var loss, right = this.TrainImpl(this._cur_train_count + 1);
         this._cur_train_count += 1;
+        if (right) this._cur_right_count += 1;
         return loss, right;
     }
 

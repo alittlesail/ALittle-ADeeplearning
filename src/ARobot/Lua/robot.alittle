@@ -93,7 +93,7 @@ public class CarpRobotMnist
 
 public class CarpRobotSurface
 {
-    public fun SetImage(int addrtess) : bool { }
+    public fun SetImage(int addrtess, int fixed_width, int fixed_height) : bool { }
     public fun GetImage(CarpRobotInput input) { }
 }
 

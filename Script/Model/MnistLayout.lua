@@ -60,6 +60,7 @@ function ADeeplearning.MnistModel:TrainImpl(index)
 	self._session:Reset()
 	self._mnist:GetImage(index - 1, self._input:GetInput())
 	local label = self._mnist:GetLabel(index - 1)
+	ALittle.Log(label)
 	self._output:Update(label)
 	local right = self._out:AsVectorAndArgmax() == label
 	local loss = self._loss:AsScalar()
@@ -69,7 +70,7 @@ end
 
 function ADeeplearning.MnistModel:Output(surface_address)
 	self._session:Reset()
-	self._surface:SetImage(surface_address)
+	self._surface:SetImage(surface_address, 28, 28)
 	self._surface:GetImage(self._input:GetInput())
 	return self._out:AsVectorAndArgmax()
 end
@@ -80,6 +81,7 @@ ADeeplearning.MnistTrainLayout = Lua.Class(ADeeplearning.CommonTrainLayout, "ADe
 function ADeeplearning.MnistTrainLayout.__getter:model()
 	if self._model == nil then
 		self._model = ADeeplearning.MnistModel()
+		self._model_path = ADeeplearning.g_ModuleBasePath .. "Other/mnist.model"
 		self._model:SetMnistRoot(ADeeplearning.g_ModuleBasePath .. "Data")
 	end
 	return self._model

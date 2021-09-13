@@ -41,6 +41,10 @@ function ADeeplearning.XorModel:Ctor()
 	___rawset(self, "_loss", self._out:Subtraction(output):Square())
 end
 
+function ADeeplearning.XorModel:TrainCountPerFrame()
+	return 10
+end
+
 function ADeeplearning.XorModel:TrainImpl(index)
 	self._session:Reset()
 	self._input:Update(self._input_list[index])
