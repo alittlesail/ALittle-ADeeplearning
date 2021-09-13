@@ -1,0 +1,66 @@
+
+namespace ADeeplearning;
+
+public class ARobotSession
+{
+    private carp.CarpRobotParameterCollection _model;
+    private carp.CarpRobotComputationGraph _graph;
+    private carp.CarpRobotAdamTrainer _trainer;
+
+    public ctor()
+    {
+        this._model = new carp.CarpRobotParameterCollection();
+        this._graph = new carp.CarpRobotComputationGraph();
+        this._trainer = new carp.CarpRobotAdamTrainer(this._model, 0.001, 0.9, 0.999, 0.00000001);
+    }
+
+    public fun Reset([Nullable]bool clear)
+    {
+        if (clear)
+        {
+            this._graph.Clear();
+            return;
+        }
+
+        this._graph.Invalidate();
+    }
+
+    public fun Train()
+    {
+        this._graph.Backward();
+        this._trainer.Update();
+    }
+
+    public fun Load(string file_path) { this._model.Load(file_path); }
+    public fun Save(string file_path) { this._model.Save(file_path); }
+
+    public fun CreateInput(List<int> dim_list) : ARobotInput
+    {
+        if (dim_list[1] == null) dim_list[1] = 0;
+        if (dim_list[2] == null) dim_list[2] = 0;
+        if (dim_list[3] == null) dim_list[3] = 0;
+        var input = new carp.CarpRobotInput(dim_list[1], dim_list[2], dim_list[3]);
+        input.Build(this._graph);
+        return new ARobotInput(this._graph, input);
+    }
+
+    public fun CreateLinear(int input_dim, int output_dim) : ARobotLinear
+    {
+        var linear = new carp.CarpRobotLinear(this._model, input_dim, output_dim);
+        linear.Build(this._graph);
+        return new ARobotLinear(this._graph, linear);
+    }
+
+    public fun CreateConv2D(int input_dim, int output_dim, int kernel_width, int kernel_height
+                           , [Nullable] int stride_width, [Nullable] int stride_height, [Nullable] bool padding_type) : ARobotConv2D
+    {
+        if (stride_width == null) stride_width = 1;
+        if (stride_height == null) stride_height = 1;
+        if (padding_type == null) padding_type = true;
+
+        var conv2d = new carp.CarpRobotConv2D(this._model, input_dim, output_dim
+                     , kernel_width, kernel_height, stride_width, stride_height, padding_type);
+        conv2d.Build(this._graph);
+        return new ARobotConv2D(this._graph, conv2d);
+    }
+}

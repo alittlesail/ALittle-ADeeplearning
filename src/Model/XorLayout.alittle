@@ -6,10 +6,10 @@ public class XorModel : ARobotModel
     private List<List<int>> _input_list;
     private List<List<int>> _output_list;
 
-    private ARobotInputExpression _input;
-    private ARobotInputExpression _output;
-    private ARobotLinearExpression _fc1;
-    private ARobotLinearExpression _fc2;
+    private ARobotInput _input;
+    private ARobotInput _output;
+    private ARobotLinear _fc1;
+    private ARobotLinear _fc2;
 
     private ARobotExpression _out;
     private ARobotExpression _loss;
@@ -41,7 +41,7 @@ public class XorModel : ARobotModel
         this._input.Update(this._input_list[index]);
         this._output.Update(this._output_list[index]);
 
-        this._session.Init();
+        this._session.Reset();
 
         var right = ALittle.Math_Abs(this._out.AsScalar() - this._output_list[index][1]) < 0.001;
         var loss = this._loss.AsScalar();
@@ -51,9 +51,11 @@ public class XorModel : ARobotModel
         return loss, right;
     }
 
-    public fun Output(double x1, double y1) : double
+    public fun Output(double x1, double x2) : double
     {
-        return 0;
+        this._input.Update([x1, x2]);
+        this._session.Reset();
+        return this._out.AsScalar();
     }
 }
 

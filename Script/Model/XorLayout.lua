@@ -29,20 +29,32 @@ function ADeeplearning.XorModel:Ctor()
 	___rawset(self, "_input_list", {{0, 0}, {0, 1}, {1, 0}, {1, 1}})
 	___rawset(self, "_output_list", {{0}, {1}, {1}, {0}})
 	___rawset(self, "_total_train_count", ALittle.List_Len(self._input_list))
-	___rawset(self, "_input", carp.CarpRobotInput(2, 0, 0))
-	___rawset(self, "_output", carp.CarpRobotInput(1, 0, 0))
-	___rawset(self, "_fc1", carp.CarpRobotLinear(self._model, 2, 8))
-	___rawset(self, "_fc2", carp.CarpRobotLinear(self._model, 8, 1))
+	___rawset(self, "_input", self._session:CreateInput({2}))
+	___rawset(self, "_output", self._session:CreateInput({1}))
+	___rawset(self, "_fc1", self._session:CreateLinear(2, 8))
+	___rawset(self, "_fc2", self._session:CreateLinear(8, 1))
+	local input = self._input:Calc()
+	local output = self._output:Calc()
+	local x = self._fc1:Calc(input)
+	x = x:Sigmoid()
+	___rawset(self, "_out", self._fc2:Calc(x))
+	___rawset(self, "_loss", self._out:Subtraction(output):Square())
 end
 
 function ADeeplearning.XorModel:TrainImpl(index)
-	self._input:Update(0, self._input_list[index])
-	self._output:Update(0, self._output_list[index])
-	return 0, false
+	self._input:Update(self._input_list[index])
+	self._output:Update(self._output_list[index])
+	self._session:Reset()
+	local right = ALittle.Math_Abs(self._out:AsScalar() - self._output_list[index][1]) < 0.001
+	local loss = self._loss:AsScalar()
+	self._session:Train()
+	return loss, right
 end
 
-function ADeeplearning.XorModel:Output(x1, y1)
-	return 0
+function ADeeplearning.XorModel:Output(x1, x2)
+	self._input:Update({x1, x2})
+	self._session:Reset()
+	return self._out:AsScalar()
 end
 
 assert(ADeeplearning.CommonTrainLayout, " extends class:ADeeplearning.CommonTrainLayout is nil")

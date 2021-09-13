@@ -22,13 +22,50 @@ type_list = {"ALittle.DisplayObject"},
 option_map = {}
 })
 
+assert(ADeeplearning.ARobotModel, " extends class:ADeeplearning.ARobotModel is nil")
+ADeeplearning.MinstModel = Lua.Class(ADeeplearning.ARobotModel, "ADeeplearning.MinstModel")
+
+function ADeeplearning.MinstModel:Ctor()
+	___rawset(self, "_input_list", {{0, 0}, {0, 1}, {1, 0}, {1, 1}})
+	___rawset(self, "_output_list", {{0}, {1}, {1}, {0}})
+	___rawset(self, "_total_train_count", ALittle.List_Len(self._input_list))
+	___rawset(self, "_input", self._session:CreateInput({2}))
+	___rawset(self, "_output", self._session:CreateInput({1}))
+	___rawset(self, "_fc1", self._session:CreateLinear(2, 8))
+	___rawset(self, "_fc2", self._session:CreateLinear(8, 1))
+	local input = self._input:Calc()
+	local output = self._output:Calc()
+	local x = self._fc1:Calc(input)
+	x = x:Sigmoid()
+	___rawset(self, "_out", self._fc2:Calc(x))
+	___rawset(self, "_loss", self._out:Subtraction(output):Square())
+end
+
+function ADeeplearning.MinstModel:SetMnistRoot(root_path)
+end
+
+function ADeeplearning.MinstModel:TrainImpl(index)
+	self._input:Update(self._input_list[index])
+	self._output:Update(self._output_list[index])
+	self._session:Reset()
+	local right = ALittle.Math_Abs(self._out:AsScalar() - self._output_list[index][1]) < 0.001
+	local loss = self._loss:AsScalar()
+	self._session:Train()
+	return loss, right
+end
+
+function ADeeplearning.MinstModel:Output(x1, x2)
+	self._input:Update({x1, x2})
+	self._session:Reset()
+	return self._out:AsScalar()
+end
+
 assert(ADeeplearning.CommonTrainLayout, " extends class:ADeeplearning.CommonTrainLayout is nil")
 ADeeplearning.MnistTrainLayout = Lua.Class(ADeeplearning.CommonTrainLayout, "ADeeplearning.MnistTrainLayout")
 
 function ADeeplearning.MnistTrainLayout.__getter:model()
 	if self._model == nil then
-		self._model = deeplearning.DeeplearningMnistModel()
-		self._model_path = ADeeplearning.g_ModuleBasePath .. "Other/mnist.model"
+		self._model = ADeeplearning.MinstModel()
 		self._model:SetMnistRoot(ADeeplearning.g_ModuleBasePath .. "Data")
 	end
 	return self._model

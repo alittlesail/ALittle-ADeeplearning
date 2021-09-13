@@ -17,6 +17,7 @@ public class ARobotExpression
     }
 
     public fun AsScalar() : double { return this._graph.AsScalar(this._index); }
+    public fun AsVectorAndArgmax() : int { return this._graph.AsVectorAndArgmax(this._index); }
 
     public fun Negate() : ARobotExpression { return new ARobotExpression(this._graph, this._graph.Negate(this._index)); }
     public fun Addition(ARobotExpression value) : ARobotExpression { return new ARobotExpression(this._graph, this._graph.Addition(this._index, value._index)); }
@@ -40,8 +41,13 @@ public class ARobotExpression
     public fun Dropout(double rate) : ARobotExpression { return new ARobotExpression(this._graph, this._graph.Dropout(this._index, rate)); }
 	public fun Conv2D(ARobotExpression kernel, int stride_width, int stride_height, bool padding_type) : ARobotExpression 
     { return new ARobotExpression(this._graph, this._graph.Conv2D(this._index, kernel._index, stride_width, stride_height, padding_type)); }
-    public fun MaxPooling2D(int kernel_width, int kernel_height, int stride_width, int stride_height, bool padding_type) : ARobotExpression 
-    { return new ARobotExpression(this._graph, this._graph.MaxPooling2D(this._index, kernel_width, kernel_height, stride_width, stride_height, padding_type)); }
+    public fun MaxPooling2D(int kernel_width, int kernel_height, [Nullable]int stride_width, [Nullable]int stride_height, [Nullable] bool padding_type) : ARobotExpression 
+    {
+        if (stride_width == null) stride_width = 1;
+        if (stride_height == null) stride_height = 1;
+        if (padding_type == null) padding_type = true;
+        return new ARobotExpression(this._graph, this._graph.MaxPooling2D(this._index, kernel_width, kernel_height, stride_width, stride_height, padding_type));
+    }
     public fun Reshape(List<int> dim_list) : ARobotExpression
     {
         if (dim_list[1] == null) dim_list[1] = 0;
@@ -51,95 +57,4 @@ public class ARobotExpression
     }
     public fun PickElement(int value, int dim) : ARobotExpression { return new ARobotExpression(this._graph, this._graph.PickElement(this._index, value, dim)); }
     public fun MeanElements(int dim) : ARobotExpression { return new ARobotExpression(this._graph, this._graph.MeanElements(this._index, dim)); }
-}
-
-public class ARobotInputExpression
-{
-    private carp.CarpRobotInput _input;
-    private carp.CarpRobotComputationGraph _graph;
-
-    public ctor(carp.CarpRobotComputationGraph graph, carp.CarpRobotInput input)
-    {
-        this._graph = graph;
-        this._input = input;
-    }
-
-    public fun Update(List<double> data, [Nullable] int offset)
-    {
-        if (offset == null) offset = 0;
-        this._input.Update(offset, data);
-    }
-
-    public fun Calc() : ARobotExpression
-    {
-        return new ARobotExpression(this._graph, this._input.Calc(this._graph));
-    }
-}
-
-public class ARobotLinearExpression
-{
-    private carp.CarpRobotLinear _linear;
-    private carp.CarpRobotComputationGraph _graph;
-
-    public ctor(carp.CarpRobotComputationGraph graph, carp.CarpRobotLinear linear)
-    {
-        this._graph = graph;
-        this._linear = linear;
-    }
-
-    public fun Calc(ARobotExpression input) : ARobotExpression
-    {
-        return new ARobotExpression(this._graph, this._linear.Calc(this._graph, input._index));
-    }
-}
-
-public class ARobotSession
-{
-    private carp.CarpRobotParameterCollection _model;
-    private carp.CarpRobotComputationGraph _graph;
-    private carp.CarpRobotAdamTrainer _trainer;
-
-    public ctor()
-    {
-        this._model = new carp.CarpRobotParameterCollection();
-        this._graph = new carp.CarpRobotComputationGraph();
-        this._trainer = new carp.CarpRobotAdamTrainer(this._model, 0.001, 0.9, 0.999, 0.00000001);
-    }
-
-    public fun Init([Nullable]bool clear)
-    {
-        if (clear)
-        {
-            this._graph.Clear();
-            return;
-        }
-
-        this._graph.Invalidate();
-    }
-
-    public fun Train()
-    {
-        this._graph.Backward();
-        this._trainer.Update();
-    }
-
-    public fun Load(string file_path) { this._model.Load(file_path); }
-    public fun Save(string file_path) { this._model.Save(file_path); }
-
-    public fun CreateInput(List<int> dim_list) : ARobotInputExpression
-    {
-        if (dim_list[1] == null) dim_list[1] = 0;
-        if (dim_list[2] == null) dim_list[2] = 0;
-        if (dim_list[3] == null) dim_list[3] = 0;
-        var input = new carp.CarpRobotInput(dim_list[1], dim_list[2], dim_list[3]);
-        input.Build(this._graph);
-        return new ARobotInputExpression(this._graph, input);
-    }
-
-    public fun CreateLinear(int input_dim, int output_dim) : ARobotLinearExpression
-    {
-        var linear = new carp.CarpRobotLinear(this._model, input_dim, output_dim);
-        linear.Build(this._graph);
-        return new ARobotLinearExpression(this._graph, linear);
-    }
 }

@@ -1,0 +1,61 @@
+
+namespace ADeeplearning;
+
+public class ARobotInput
+{
+    private carp.CarpRobotInput _input;
+    private carp.CarpRobotComputationGraph _graph;
+
+    public ctor(carp.CarpRobotComputationGraph graph, carp.CarpRobotInput input)
+    {
+        this._graph = graph;
+        this._input = input;
+    }
+
+    public fun GetInput() : carp.CarpRobotInput { return this._input; }
+
+    public fun Update(List<double> data, [Nullable] int offset)
+    {
+        if (offset == null) offset = 0;
+        this._input.Update(offset, data);
+    }
+
+    public fun Calc() : ARobotExpression
+    {
+        return new ARobotExpression(this._graph, this._input.Calc(this._graph));
+    }
+}
+
+public class ARobotLinear
+{
+    private carp.CarpRobotLinear _linear;
+    private carp.CarpRobotComputationGraph _graph;
+
+    public ctor(carp.CarpRobotComputationGraph graph, carp.CarpRobotLinear linear)
+    {
+        this._graph = graph;
+        this._linear = linear;
+    }
+
+    public fun Calc(ARobotExpression input) : ARobotExpression
+    {
+        return new ARobotExpression(this._graph, this._linear.Calc(this._graph, input._index));
+    }
+}
+
+public class ARobotConv2D
+{
+    private carp.CarpRobotConv2D _conv2d;
+    private carp.CarpRobotComputationGraph _graph;
+
+    public ctor(carp.CarpRobotComputationGraph graph, carp.CarpRobotConv2D conv2d)
+    {
+        this._graph = graph;
+        this._conv2d = conv2d;
+    }
+
+    public fun Calc(ARobotExpression input) : ARobotExpression
+    {
+        return new ARobotExpression(this._graph, this._conv2d.Calc(this._graph, input._index));
+    }
+}

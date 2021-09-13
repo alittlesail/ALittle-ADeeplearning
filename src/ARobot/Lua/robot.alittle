@@ -7,6 +7,7 @@ public class CarpRobotComputationGraph
     public fun Invalidate() {}
     public fun Backward() {}
     public fun AsScalar(int index) : double {}
+    public fun AsVectorAndArgmax(int index) : int {}
 
     public fun Negate(int index) : int {}
     public fun Addition(int index1, int index2) : int {}
@@ -74,4 +75,12 @@ public class CarpRobotConv2D
     public fun Build(CarpRobotComputationGraph graph) { }
     public fun Copy(CarpRobotConv2D value) { }
     public fun Calc(CarpRobotComputationGraph graph, int input) : int { }
+}
+
+public class CarpRobotMnist
+{
+    public fun Load(string root_path) : bool { }
+    public fun GetImage(int index, CarpRobotInput input) : bool { }
+    public fun GetLabel(int index) : int { }
+    public fun GetCount() : int { }
 }

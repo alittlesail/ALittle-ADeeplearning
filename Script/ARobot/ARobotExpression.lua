@@ -20,6 +20,10 @@ function ADeeplearning.ARobotExpression:AsScalar()
 	return self._graph:AsScalar(self._index)
 end
 
+function ADeeplearning.ARobotExpression:AsVectorAndArgmax()
+	return self._graph:AsVectorAndArgmax(self._index)
+end
+
 function ADeeplearning.ARobotExpression:Negate()
 	return ADeeplearning.ARobotExpression(self._graph, self._graph:Negate(self._index))
 end
@@ -93,6 +97,15 @@ function ADeeplearning.ARobotExpression:Conv2D(kernel, stride_width, stride_heig
 end
 
 function ADeeplearning.ARobotExpression:MaxPooling2D(kernel_width, kernel_height, stride_width, stride_height, padding_type)
+	if stride_width == nil then
+		stride_width = 1
+	end
+	if stride_height == nil then
+		stride_height = 1
+	end
+	if padding_type == nil then
+		padding_type = true
+	end
 	return ADeeplearning.ARobotExpression(self._graph, self._graph:MaxPooling2D(self._index, kernel_width, kernel_height, stride_width, stride_height, padding_type))
 end
 
@@ -115,85 +128,6 @@ end
 
 function ADeeplearning.ARobotExpression:MeanElements(dim)
 	return ADeeplearning.ARobotExpression(self._graph, self._graph:MeanElements(self._index, dim))
-end
-
-ADeeplearning.ARobotInput = Lua.Class(nil, "ADeeplearning.ARobotInput")
-
-function ADeeplearning.ARobotInput:Ctor(graph, input)
-	___rawset(self, "_graph", graph)
-	___rawset(self, "_input", input)
-end
-
-function ADeeplearning.ARobotInput:Update(data, offset)
-	if offset == nil then
-		offset = 0
-	end
-	self._input:Update(offset, data)
-end
-
-function ADeeplearning.ARobotInput:Calc()
-	return ADeeplearning.ARobotExpression(self._graph, self._input:Calc(self._graph))
-end
-
-ADeeplearning.ARobotLinear = Lua.Class(nil, "ADeeplearning.ARobotLinear")
-
-function ADeeplearning.ARobotLinear:Ctor(graph, linear)
-	___rawset(self, "_graph", graph)
-	___rawset(self, "_linear", linear)
-end
-
-function ADeeplearning.ARobotLinear:Calc(input)
-	return ADeeplearning.ARobotExpression(self._graph, self._linear:Calc(self._graph, input._index))
-end
-
-ADeeplearning.ARobotSession = Lua.Class(nil, "ADeeplearning.ARobotSession")
-
-function ADeeplearning.ARobotSession:Ctor()
-	___rawset(self, "_model", carp.CarpRobotParameterCollection())
-	___rawset(self, "_graph", carp.CarpRobotComputationGraph())
-	___rawset(self, "_trainer", carp.CarpRobotAdamTrainer(self._model, 0.001, 0.9, 0.999, 0.00000001))
-end
-
-function ADeeplearning.ARobotSession:Reset(clear)
-	if clear then
-		self._graph:Clear()
-		return
-	end
-	self._graph:Invalidate()
-end
-
-function ADeeplearning.ARobotSession:Train()
-	self._graph:Backward()
-	self._trainer:Update()
-end
-
-function ADeeplearning.ARobotSession:Load(file_path)
-	self._model:Load(file_path)
-end
-
-function ADeeplearning.ARobotSession:Save(file_path)
-	self._model:Save(file_path)
-end
-
-function ADeeplearning.ARobotSession:CreateInput(dim_list)
-	if dim_list[1] == nil then
-		dim_list[1] = 0
-	end
-	if dim_list[2] == nil then
-		dim_list[2] = 0
-	end
-	if dim_list[3] == nil then
-		dim_list[3] = 0
-	end
-	local input = carp.CarpRobotInput(dim_list[1], dim_list[2], dim_list[3])
-	input:Build(self._graph)
-	return ADeeplearning.ARobotInput(self._graph, input)
-end
-
-function ADeeplearning.ARobotSession:CreateLinear(input_dim, output_dim)
-	local linear = carp.CarpRobotLinear(self._model, input_dim, output_dim)
-	linear:Build(self._graph)
-	return ADeeplearning.ARobotLinear(self._graph, linear)
 end
 
 end

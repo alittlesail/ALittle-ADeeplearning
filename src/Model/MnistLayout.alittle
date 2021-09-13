@@ -1,16 +1,108 @@
 
 namespace ADeeplearning;
 
+public class MnistModel : ARobotModel
+{
+    private carp.CarpRobotMnist _mnist;
+
+    private ARobotInput _input;
+    private ARobotConv2D _conv1;
+    private ARobotConv2D _conv2;
+    private ARobotLinear _fc1;
+    private ARobotLinear _fc2;
+
+    private ARobotExpression _out;
+    private ARobotExpression _loss;
+
+    public ctor()
+    {
+        this._mnist = new carp.CarpRobotMnist();
+
+        // 构建图
+        this._input = this._session.CreateInput([28, 28, 1]);
+        this._conv1 = this._session.CreateConv2D(1, 64, 5, 5);
+        this._conv2 = this._session.CreateConv2D(64, 128, 5, 5);
+        this._fc1 = this._session.CreateLinear(4 * 4 * 128, 1024);
+        this._fc2 = this._session.CreateLinear(1024, 10);
+
+        // input 28 * 28 * 1
+        var input = this._input.Calc();
+    
+		// 第一层卷积  得到=> 24 * 24 * 64
+		var x = this._conv1.Calc(input);
+    
+		// 得到=> 12 * 12 * 64
+		x = x.MaxPooling2D(2, 2, 2, 2);
+
+		// 得到=> 12 * 12 * 64
+		x = x.Rectify();
+
+		// 第二层卷积 得到=> 8 * 8 * 128
+		x = this._conv2.Calc(x);
+
+		// 得到=> 4 * 4 * 128
+		x = x.MaxPooling2D(2, 2, 2, 2);
+
+		// 得到=> 4 * 4 * 128
+		x = x.Rectify();
+
+		// 得到=> 2048
+		x = x.Reshape([ 4 * 4 * 128 ]);
+
+        // 第一层全连接 得到=> 1024
+        x = this._fc1.Calc(x);
+        
+        // 得到=> 1024
+        x = x.Rectify();
+        
+        // dropout 得到=> 1024
+        x = x.Dropout(0.5);
+        
+        // 第二层全连接 得到=> 10
+        x = this._fc2.Calc(x);
+        
+        // 得到 => 10
+        this._out = x.LogSoftmax();
+    }
+
+    public fun SetMnistRoot(string root_path) : bool
+    {
+        var result = this._mnist.Load(root_path);
+        this._total_train_count = this._mnist.GetCount();
+        return result;
+    }
+
+    // 训练
+    public fun TrainImpl(int index) : double, bool
+    {
+        this._mnist.GetImage(index - 1, this._input.GetInput());
+        var label = this._mnist.GetLabel(index - 1);
+
+        this._session.Reset();
+
+        var right = ALittle.Math_Abs(this._out.AsScalar() - this._output_list[index][1]) < 0.001;
+        var loss = this._loss.AsScalar();
+
+        this._session.Train();
+
+        return loss, right;
+    }
+
+    public fun Output(int surface_address) : int
+    {
+        this._session.Reset();
+    }
+}
+
 public class MnistTrainLayout : CommonTrainLayout
 {
-    private deeplearning.DeeplearningMnistModel _model;
+    private MnistModel _model;
 
-    public get model() : deeplearning.DeeplearningModel
+    public get model() : ARobotModel
     {
         if (this._model == null)
         {
-            this._model = new deeplearning.DeeplearningMnistModel();
-            this._model_path = g_ModuleBasePath.."Other/mnist.model";
+            this._model = new MnistModel();
             this._model.SetMnistRoot(g_ModuleBasePath.."Data");
         }
         return this._model;
@@ -23,17 +115,10 @@ protected class MnistLayout : ALittle.DisplayLayout
 
 	private ALittle.Text _result_text;
 	private AUIPlugin.AUIDrawingBoard _board;
-    private deeplearning.DeeplearningMnistModel _model;
-
-    private string _model_path;
-    private bool _loaded = false;
 
     public fun TCtor()
     {
         this._train.AddEventListener(this, this.HandleTrainChanged);
-
-        this._model_path = g_ModuleBasePath.."Other/mnist.model";
-        this._model = new deeplearning.DeeplearningMnistModel();
 
         this._board.SetPan(5, 0xFFFFFFFF);
         this._board.SetDrawSize(ALittle.Math_Floor(this._board.width), ALittle.Math_Floor(this._board.height), 0xFF000000);
@@ -42,19 +127,14 @@ protected class MnistLayout : ALittle.DisplayLayout
 
     private fun HandleTrainChanged(ALittle.UIChangedEvent event)
     {
-        this._model.Load(this._model_path);
     }
 
     private fun HandleDrawChanged(ALittle.UIChangedEvent event)
     {
-        if (!this._loaded)
-        {
-            this._model.Load(this._model_path);
-            this._loaded = true;
-        }
+        var model = cast<MnistModel>(this._train.model);
 
         var address = carp.GetCarpSurfaceAddress(this._board.surface);
-        var result = this._model.Output(address);
+        var result = model.Output(address);
         this._result_text.text = "识别结果:"..result;
     }
 
