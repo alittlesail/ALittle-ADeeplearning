@@ -1,0 +1,50 @@
+
+namespace ADeeplearning;
+
+public class ARobotModel
+{
+    private ARobotSession _session;
+
+    private int _total_train_count = 0;
+    private int _cur_train_count = 0;
+    private int _cur_right_count = 0;
+    private int _train_round = 0;
+
+    public ctor()
+    {
+        this._session = new ARobotSession();
+    }
+
+    public fun Load(string file_path) { this._session.Load(file_path); }
+    public fun Save(string file_path) { this._session.Save(file_path); }
+
+    // 训练轮数
+    public fun GetTotalTrainCount() : int { return this._total_train_count; }
+    // 当前轮数据总数
+    public fun GetCurTrainCount() : int { return this._cur_train_count; }
+    // 训练的轮数
+    public fun GetTrainRound() : int { return this._cur_right_count; }
+    // 判定正确的数量
+    public fun GetCurRightCount() : int { return this._train_round; }
+    // 每帧训练多少次
+    public fun TrainCountPerFrame() : int { return 1; }
+    // 训练
+    public fun Train() : double, bool
+    {
+        if (this._cur_train_count >= this._total_train_count)
+        {
+            this._cur_train_count = 0;
+            this._train_round += 1;
+        }
+
+        var loss, right = this.TrainImpl(this._cur_train_count + 1);
+        this._cur_train_count += 1;
+        return loss, right;
+    }
+
+    // index表示训练集合的下标，下标从1开始算
+    private fun TrainImpl(int index) : double, bool
+    {
+        return 0, false;
+    }
+}

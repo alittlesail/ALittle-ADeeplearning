@@ -4,6 +4,7 @@ if _G.ADeeplearning == nil then _G.ADeeplearning = {} end
 local ADeeplearning = ADeeplearning
 local Lua = Lua
 local ALittle = ALittle
+local ___rawset = rawset
 local ___pairs = pairs
 local ___ipairs = ipairs
 local ___all_struct = ALittle.GetAllStruct()
@@ -21,12 +22,35 @@ type_list = {"ALittle.DisplayObject"},
 option_map = {}
 })
 
+assert(ADeeplearning.ARobotModel, " extends class:ADeeplearning.ARobotModel is nil")
+ADeeplearning.XorModel = Lua.Class(ADeeplearning.ARobotModel, "ADeeplearning.XorModel")
+
+function ADeeplearning.XorModel:Ctor()
+	___rawset(self, "_input_list", {{0, 0}, {0, 1}, {1, 0}, {1, 1}})
+	___rawset(self, "_output_list", {{0}, {1}, {1}, {0}})
+	___rawset(self, "_total_train_count", ALittle.List_Len(self._input_list))
+	___rawset(self, "_input", carp.CarpRobotInput(2, 0, 0))
+	___rawset(self, "_output", carp.CarpRobotInput(1, 0, 0))
+	___rawset(self, "_fc1", carp.CarpRobotLinear(self._model, 2, 8))
+	___rawset(self, "_fc2", carp.CarpRobotLinear(self._model, 8, 1))
+end
+
+function ADeeplearning.XorModel:TrainImpl(index)
+	self._input:Update(0, self._input_list[index])
+	self._output:Update(0, self._output_list[index])
+	return 0, false
+end
+
+function ADeeplearning.XorModel:Output(x1, y1)
+	return 0
+end
+
 assert(ADeeplearning.CommonTrainLayout, " extends class:ADeeplearning.CommonTrainLayout is nil")
 ADeeplearning.XorTrainLayout = Lua.Class(ADeeplearning.CommonTrainLayout, "ADeeplearning.XorTrainLayout")
 
 function ADeeplearning.XorTrainLayout.__getter:model()
 	if self._model == nil then
-		self._model = deeplearning.DeeplearningXorModel()
+		self._model = ADeeplearning.XorModel()
 		self._model_path = ADeeplearning.g_ModuleBasePath .. "Other/xor.model"
 	end
 	return self._model
@@ -37,8 +61,6 @@ ADeeplearning.XorLayout = Lua.Class(ALittle.DisplayLayout, "ADeeplearning.XorLay
 
 function ADeeplearning.XorLayout:TCtor()
 	self._train:AddEventListener(___all_struct[958494922], self, self.HandleTrainChanged)
-	self._model_path = ADeeplearning.g_ModuleBasePath .. "Other/xor.model"
-	self._model = deeplearning.DeeplearningXorModel()
 end
 
 function ADeeplearning.XorLayout:HandleTrainChanged(event)
@@ -50,11 +72,11 @@ function ADeeplearning.XorLayout:HandleCalcClick(event)
 end
 
 function ADeeplearning.XorLayout:Calc()
-	self._model:Load(self._model_path)
-	self._result_1.text = ALittle.Math_Floor(self._model:Output(0.0, 0.0) * 100000) / 100000
-	self._result_2.text = ALittle.Math_Floor(self._model:Output(0.0, 1.0) * 100000) / 100000
-	self._result_3.text = ALittle.Math_Floor(self._model:Output(1.0, 0.0) * 100000) / 100000
-	self._result_4.text = ALittle.Math_Floor(self._model:Output(1.0, 1.0) * 100000) / 100000
+	local model = self._train.model
+	self._result_1.text = ALittle.Math_Floor(model:Output(0.0, 0.0) * 100000) / 100000
+	self._result_2.text = ALittle.Math_Floor(model:Output(0.0, 1.0) * 100000) / 100000
+	self._result_3.text = ALittle.Math_Floor(model:Output(1.0, 0.0) * 100000) / 100000
+	self._result_4.text = ALittle.Math_Floor(model:Output(1.0, 1.0) * 100000) / 100000
 end
 
 end

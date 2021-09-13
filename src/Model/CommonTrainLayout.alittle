@@ -23,7 +23,7 @@ public class CommonTrainLayout : ALittle.DisplayLayout
         this._stop_button.disabled = true;
     }
 
-    private get model() : deeplearning.DeeplearningModel { return null; }
+    private get model() : ARobotModel { return null; }
 
     private fun HandleStartClick(ALittle.UIClickEvent event)
     {
@@ -31,9 +31,6 @@ public class CommonTrainLayout : ALittle.DisplayLayout
         this._start_button.DelayDisable();
         this._stop_button.disabled = false;
     
-        this._loop = new ALittle.LoopFrame(bind(this.UpdateFrame, this));
-        A_WeakLoopSystem.AddUpdater(this._loop);
-
         this._total_train_count_text.text = 0;
         this._cur_train_count_text.text = 0;
         this._train_round_text.text = 0;
@@ -41,7 +38,9 @@ public class CommonTrainLayout : ALittle.DisplayLayout
 
         this._stat.Init(1, ALittle.Math_Floor(this._stat.width), ALittle.Math_Floor(this._stat.height));
         this.model.Load(this._model_path);
-        this.model.StartTraining();
+
+        this._loop = new ALittle.LoopFrame(bind(this.UpdateFrame, this));
+        A_WeakLoopSystem.AddUpdater(this._loop);
     }
 
     private fun HandleStopClick(ALittle.UIClickEvent event)
@@ -56,32 +55,24 @@ public class CommonTrainLayout : ALittle.DisplayLayout
             this._loop = null;
         }
 
-        this.model.StopTraining();
         this.model.Save(this._model_path);
-
         this.DispatchEvent(new ALittle.UIChangedEvent());
     }
 
     private fun UpdateFrame(int frame_time)
     {
-        this.model.HandleEvent();
-
-        var has_loss = false;
-        while (this.model.HasResult())
+        var model = this.model;
+        var count = model.TrainCountPerFrame();
+        for (var i = 1; i <= count; 1)
         {
-            has_loss = true;
-            var loss = this.model.GetLoss();
-            var right = this.model.GetRight();
+            var loss, right = this.model.Train();
             this._stat.AddValue(loss, right);
         }
 
-        if (has_loss)
-        {
-            this._total_train_count_text.text = this.model.GetTotalTrainCount();
-            this._cur_train_count_text.text = this.model.GetCurTrainCount();
-            this._train_round_text.text = this.model.GetTrainRound();
-            this._cur_right_count_text.text = this.model.GetCurRightCount();
-            this._loss_average_text.text = ALittle.Math_Floor(this._stat.GetAverageValue() * 10000) / 10000;
-        }
+        this._total_train_count_text.text = this.model.GetTotalTrainCount();
+        this._cur_train_count_text.text = this.model.GetCurTrainCount();
+        this._train_round_text.text = this.model.GetTrainRound();
+        this._cur_right_count_text.text = this.model.GetCurRightCount();
+        this._loss_average_text.text = ALittle.Math_Floor(this._stat.GetAverageValue() * 10000) / 10000;
     }
 }

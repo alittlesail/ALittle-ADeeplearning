@@ -1,0 +1,77 @@
+
+register namespace carp;
+
+public class CarpRobotComputationGraph
+{
+    public fun Clear() {}
+    public fun Invalidate() {}
+    public fun Backward() {}
+    public fun AsScalar(int index) : double {}
+
+    public fun Negate(int index) : int {}
+    public fun Addition(int index1, int index2) : int {}
+    public fun Plus(int index, double value) : int {}
+    public fun Subtraction(int index1, int index2) : int {}
+    public fun Minus(int index, double value) : int {}
+    public fun Multiplication(int index1, int index2) : int {}
+    public fun Multiply(int index, double value) : int {}
+    public fun Division(int index1, int index2) : int {}
+    public fun Divide(int index, double value) : int {}
+
+    public fun Square(int index) : int { }
+    public fun PickNegLogSoftmax(int index, int v) : int { }
+    public fun BinaryLogLoss(int index) : int { }
+
+    public fun Sigmoid(int index) : int { }
+    public fun Rectify(int index) : int { }
+    public fun Softmax(int index) : int { }
+    public fun LogSoftmax(int index) : int { }
+
+    public fun Dropout(int index, double rate) : int { }
+    public fun Conv2D(int index, int kernel_expr, int stride_width, int stride_height, bool padding_type) : int { }
+    public fun MaxPooling2D(int index, int kernel_width, int kernel_height, int stride_width, int stride_height, bool padding_type) : int { }
+    public fun Reshape(int index, int dim_0, int dim_1, int dim_2) : int { }
+    public fun PickElement(int index, int value, int dim) : int { }
+    public fun MeanElements(int index, int dim) : int { }
+}
+
+public class CarpRobotParameterCollection
+{
+    public fun Load(string file_path) { }
+    public fun Save(string file_path) { }
+}
+
+public class CarpRobotAdamTrainer
+{
+    public ctor(CarpRobotParameterCollection model, double learning_rate, double beta_1, double beta_2, double eps) {}
+    public fun Update() { }
+}
+
+public class CarpRobotInput
+{
+    public ctor(int dim_0, int dim_1, int dim_2) { }
+
+    public fun Build(CarpRobotComputationGraph graph) { }
+    public fun Update(int offset, List<double> data) { }
+    public fun Calc(CarpRobotComputationGraph graph) : int { }
+}
+
+public class CarpRobotLinear
+{
+    public ctor(CarpRobotParameterCollection model, int input_dim, int output_dim) { }
+
+    public fun Build(CarpRobotComputationGraph graph) { }
+    public fun Copy(CarpRobotLinear value) { }
+    public fun Calc(CarpRobotComputationGraph graph, int input) : int { }
+}
+
+public class CarpRobotConv2D
+{
+    public ctor(CarpRobotParameterCollection model
+               , int input_dim, int output_dim, int kernel_width, int kernel_height
+               , int stride_width, int stride_height, bool padding_type) { }
+
+    public fun Build(CarpRobotComputationGraph graph) { }
+    public fun Copy(CarpRobotConv2D value) { }
+    public fun Calc(CarpRobotComputationGraph graph, int input) : int { }
+}
