@@ -86,7 +86,6 @@ public class MnistModel : ARobotModel
 
         this._mnist.GetImage(index - 1, this._input.GetInput());
         var label = this._mnist.GetLabel(index - 1);
-        ALittle.Log(label);
 
         this._output.Update(label);
         var right = this._out.AsVectorAndArgmax() == label;

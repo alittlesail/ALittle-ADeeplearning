@@ -60,7 +60,6 @@ function ADeeplearning.MnistModel:TrainImpl(index)
 	self._session:Reset()
 	self._mnist:GetImage(index - 1, self._input:GetInput())
 	local label = self._mnist:GetLabel(index - 1)
-	ALittle.Log(label)
 	self._output:Update(label)
 	local right = self._out:AsVectorAndArgmax() == label
 	local loss = self._loss:AsScalar()
