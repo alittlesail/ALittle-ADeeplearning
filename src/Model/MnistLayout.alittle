@@ -4,8 +4,10 @@ namespace ADeeplearning;
 public class MnistModel : ARobotModel
 {
     private carp.CarpRobotMnist _mnist;
+    private carp.CarpRobotSurface _surface;
 
     private ARobotInput _input;
+    private ARobotLabel _output;
     private ARobotConv2D _conv1;
     private ARobotConv2D _conv2;
     private ARobotLinear _fc1;
@@ -17,9 +19,11 @@ public class MnistModel : ARobotModel
     public ctor()
     {
         this._mnist = new carp.CarpRobotMnist();
+        this._surface = new carp.CarpRobotSurface();
 
         // 构建图
         this._input = this._session.CreateInput([28, 28, 1]);
+        this._output = this._session.CreateLabel();
         this._conv1 = this._session.CreateConv2D(1, 64, 5, 5);
         this._conv2 = this._session.CreateConv2D(64, 128, 5, 5);
         this._fc1 = this._session.CreateLinear(4 * 4 * 128, 1024);
@@ -63,6 +67,9 @@ public class MnistModel : ARobotModel
         
         // 得到 => 10
         this._out = x.LogSoftmax();
+
+        // 得到loss表达式
+        this._loss = this._out.PickNegLogSoftmax(this._output);
     }
 
     public fun SetMnistRoot(string root_path) : bool
@@ -75,22 +82,26 @@ public class MnistModel : ARobotModel
     // 训练
     public fun TrainImpl(int index) : double, bool
     {
+        this._session.Reset();
+
         this._mnist.GetImage(index - 1, this._input.GetInput());
         var label = this._mnist.GetLabel(index - 1);
 
-        this._session.Reset();
-
-        var right = ALittle.Math_Abs(this._out.AsScalar() - this._output_list[index][1]) < 0.001;
+        this._output.Update(label);
+        var right = this._out.AsVectorAndArgmax() == label;
         var loss = this._loss.AsScalar();
 
         this._session.Train();
-
         return loss, right;
     }
 
     public fun Output(int surface_address) : int
     {
         this._session.Reset();
+
+        this._surface.SetImage(surface_address);
+        this._surface.GetImage(this._input.GetInput());
+        return this._out.AsVectorAndArgmax();
     }
 }
 

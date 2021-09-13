@@ -18,6 +18,7 @@ public class ARobotExpression
 
     public fun AsScalar() : double { return this._graph.AsScalar(this._index); }
     public fun AsVectorAndArgmax() : int { return this._graph.AsVectorAndArgmax(this._index); }
+    public fun AsVectorAndMaxValue() : double { return this._graph.AsVectorAndMaxValue(this._index); }
 
     public fun Negate() : ARobotExpression { return new ARobotExpression(this._graph, this._graph.Negate(this._index)); }
     public fun Addition(ARobotExpression value) : ARobotExpression { return new ARobotExpression(this._graph, this._graph.Addition(this._index, value._index)); }
@@ -30,7 +31,7 @@ public class ARobotExpression
     public fun Divide(double value) : ARobotExpression { return new ARobotExpression(this._graph, this._graph.Divide(this._index, value)); }
 
     public fun Square() : ARobotExpression { return new ARobotExpression(this._graph, this._graph.Square(this._index)); }
-    public fun PickNegLogSoftmax(int v) : ARobotExpression { return new ARobotExpression(this._graph, this._graph.PickNegLogSoftmax(this._index, v)); }
+    public fun PickNegLogSoftmax(ARobotLabel label) : ARobotExpression { return new ARobotExpression(this._graph, this._graph.PickNegLogSoftmax(this._index, label.GetLabel())); }
     public fun BinaryLogLoss() : ARobotExpression { return new ARobotExpression(this._graph, this._graph.BinaryLogLoss(this._index)); }
 
     public fun Sigmoid() : ARobotExpression { return new ARobotExpression(this._graph, this._graph.Sigmoid(this._index)); }
@@ -55,6 +56,6 @@ public class ARobotExpression
         if (dim_list[3] == null) dim_list[3] = 0;
         return new ARobotExpression(this._graph, this._graph.Reshape(this._index, dim_list[1], dim_list[2], dim_list[3]));
     }
-    public fun PickElement(int value, int dim) : ARobotExpression { return new ARobotExpression(this._graph, this._graph.PickElement(this._index, value, dim)); }
+    public fun PickElement(ARobotLabel label, int dim) : ARobotExpression { return new ARobotExpression(this._graph, this._graph.PickElement(this._index, label.GetLabel(), dim)); }
     public fun MeanElements(int dim) : ARobotExpression { return new ARobotExpression(this._graph, this._graph.MeanElements(this._index, dim)); }
 }

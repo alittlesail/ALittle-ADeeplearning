@@ -31,11 +31,30 @@ function ADeeplearning.ARobotInput:Calc()
 	return ADeeplearning.ARobotExpression(self._graph, self._input:Calc(self._graph))
 end
 
+ADeeplearning.ARobotLabel = Lua.Class(nil, "ADeeplearning.ARobotLabel")
+
+function ADeeplearning.ARobotLabel:Ctor(graph, label)
+	___rawset(self, "_graph", graph)
+	___rawset(self, "_label", label)
+end
+
+function ADeeplearning.ARobotLabel:GetLabel()
+	return self._label
+end
+
+function ADeeplearning.ARobotLabel:Update(label)
+	self._label:Update(label)
+end
+
 ADeeplearning.ARobotLinear = Lua.Class(nil, "ADeeplearning.ARobotLinear")
 
 function ADeeplearning.ARobotLinear:Ctor(graph, linear)
 	___rawset(self, "_graph", graph)
 	___rawset(self, "_linear", linear)
+end
+
+function ADeeplearning.ARobotLinear:Copy(linear)
+	self._linear:Copy(linear._linear)
 end
 
 function ADeeplearning.ARobotLinear:Calc(input)
@@ -47,6 +66,10 @@ ADeeplearning.ARobotConv2D = Lua.Class(nil, "ADeeplearning.ARobotConv2D")
 function ADeeplearning.ARobotConv2D:Ctor(graph, conv2d)
 	___rawset(self, "_graph", graph)
 	___rawset(self, "_conv2d", conv2d)
+end
+
+function ADeeplearning.ARobotConv2D:Copy(conv2d)
+	self._conv2d:Copy(conv2d._conv2d)
 end
 
 function ADeeplearning.ARobotConv2D:Calc(input)

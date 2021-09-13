@@ -8,6 +8,7 @@ public class CarpRobotComputationGraph
     public fun Backward() {}
     public fun AsScalar(int index) : double {}
     public fun AsVectorAndArgmax(int index) : int {}
+    public fun AsVectorAndMaxValue(int index) : double {}
 
     public fun Negate(int index) : int {}
     public fun Addition(int index1, int index2) : int {}
@@ -20,7 +21,7 @@ public class CarpRobotComputationGraph
     public fun Divide(int index, double value) : int {}
 
     public fun Square(int index) : int { }
-    public fun PickNegLogSoftmax(int index, int v) : int { }
+    public fun PickNegLogSoftmax(int index, carp.CarpRobotLabel v) : int { }
     public fun BinaryLogLoss(int index) : int { }
 
     public fun Sigmoid(int index) : int { }
@@ -32,7 +33,7 @@ public class CarpRobotComputationGraph
     public fun Conv2D(int index, int kernel_expr, int stride_width, int stride_height, bool padding_type) : int { }
     public fun MaxPooling2D(int index, int kernel_width, int kernel_height, int stride_width, int stride_height, bool padding_type) : int { }
     public fun Reshape(int index, int dim_0, int dim_1, int dim_2) : int { }
-    public fun PickElement(int index, int value, int dim) : int { }
+    public fun PickElement(int index, carp.CarpRobotLabel value, int dim) : int { }
     public fun MeanElements(int index, int dim) : int { }
 }
 
@@ -55,6 +56,11 @@ public class CarpRobotInput
     public fun Build(CarpRobotComputationGraph graph) { }
     public fun Update(int offset, List<double> data) { }
     public fun Calc(CarpRobotComputationGraph graph) : int { }
+}
+
+public class CarpRobotLabel
+{
+    public fun Update(int label) { }
 }
 
 public class CarpRobotLinear
@@ -83,4 +89,21 @@ public class CarpRobotMnist
     public fun GetImage(int index, CarpRobotInput input) : bool { }
     public fun GetLabel(int index) : int { }
     public fun GetCount() : int { }
+}
+
+public class CarpRobotSurface
+{
+    public fun SetImage(int addrtess) : bool { }
+    public fun GetImage(CarpRobotInput input) { }
+}
+
+public class CarpRobotSumTree
+{
+    public ctor(int memory_capacity) { }
+    public fun SaveMemory(List<double> state, List<double> next_state, int action, double reward, double loss) : bool { }
+    public fun SelectMemory(int count) : List<int> { }
+    public fun GetState(int index, CarpRobotInput input) { }
+    public fun GetNextState(int index, CarpRobotInput input) { }
+    public fun GetReward(int index, CarpRobotInput input) : double { }
+    public fun GetAction(int index, CarpRobotLabel label) : int { }
 }

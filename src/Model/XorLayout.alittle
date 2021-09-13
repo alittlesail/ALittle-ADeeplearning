@@ -38,10 +38,10 @@ public class XorModel : ARobotModel
     // 训练
     public fun TrainImpl(int index) : double, bool
     {
+        this._session.Reset();
+
         this._input.Update(this._input_list[index]);
         this._output.Update(this._output_list[index]);
-
-        this._session.Reset();
 
         var right = ALittle.Math_Abs(this._out.AsScalar() - this._output_list[index][1]) < 0.001;
         var loss = this._loss.AsScalar();

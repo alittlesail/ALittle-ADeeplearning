@@ -38,7 +38,7 @@ end
 
 function ADeeplearning.CartPoleLayout:TCtor()
 	self._model_path = ADeeplearning.g_ModuleBasePath .. "Other/cartpole.model"
-	self._model = deeplearning.DeeplearningDuelingDqnModel(4, 2, 100, 2000)
+	self._model = ADeeplearning.ARobotDuelingDqnDnnModel(4, 2, 100, 1000)
 	self._learn_theta_threshold_radians = 12 * 2 * 3.14159265 / 360
 	self._total_mass = self._masscart + self._masspole
 	self._polemass_length = self._masspole * self._polemass_length
@@ -111,13 +111,8 @@ function ADeeplearning.CartPoleLayout:HandleFrame(frame_time)
 	local r1 = (self._x_threshold - ALittle.Math_Abs(self._cart_x)) / self._x_threshold - 0.8
 	local r2 = (self._learn_theta_threshold_radians - ALittle.Math_Abs(self._pole_theta)) / self._learn_theta_threshold_radians - 0.5
 	local reward = r1 + r2
-	self._model:SaveTransition(state, action, reward, next_state)
-	local i = 1
-	while true do
-		if not(i <= 32) then break end
-		self._model:Learn()
-		i = i+(1)
-	end
+	self._model:SaveTransition(state, next_state, action, reward)
+	self._model:Train(32)
 	if done then
 		if self._loop_frame ~= nil then
 			self._loop_frame:Stop()

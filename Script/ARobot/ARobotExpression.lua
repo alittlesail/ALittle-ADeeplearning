@@ -24,6 +24,10 @@ function ADeeplearning.ARobotExpression:AsVectorAndArgmax()
 	return self._graph:AsVectorAndArgmax(self._index)
 end
 
+function ADeeplearning.ARobotExpression:AsVectorAndMaxValue()
+	return self._graph:AsVectorAndMaxValue(self._index)
+end
+
 function ADeeplearning.ARobotExpression:Negate()
 	return ADeeplearning.ARobotExpression(self._graph, self._graph:Negate(self._index))
 end
@@ -64,8 +68,8 @@ function ADeeplearning.ARobotExpression:Square()
 	return ADeeplearning.ARobotExpression(self._graph, self._graph:Square(self._index))
 end
 
-function ADeeplearning.ARobotExpression:PickNegLogSoftmax(v)
-	return ADeeplearning.ARobotExpression(self._graph, self._graph:PickNegLogSoftmax(self._index, v))
+function ADeeplearning.ARobotExpression:PickNegLogSoftmax(label)
+	return ADeeplearning.ARobotExpression(self._graph, self._graph:PickNegLogSoftmax(self._index, label:GetLabel()))
 end
 
 function ADeeplearning.ARobotExpression:BinaryLogLoss()
@@ -122,8 +126,8 @@ function ADeeplearning.ARobotExpression:Reshape(dim_list)
 	return ADeeplearning.ARobotExpression(self._graph, self._graph:Reshape(self._index, dim_list[1], dim_list[2], dim_list[3]))
 end
 
-function ADeeplearning.ARobotExpression:PickElement(value, dim)
-	return ADeeplearning.ARobotExpression(self._graph, self._graph:PickElement(self._index, value, dim))
+function ADeeplearning.ARobotExpression:PickElement(label, dim)
+	return ADeeplearning.ARobotExpression(self._graph, self._graph:PickElement(self._index, label:GetLabel(), dim))
 end
 
 function ADeeplearning.ARobotExpression:MeanElements(dim)

@@ -26,6 +26,25 @@ public class ARobotInput
     }
 }
 
+public class ARobotLabel
+{
+    private carp.CarpRobotLabel _label;
+    private carp.CarpRobotComputationGraph _graph;
+
+    public ctor(carp.CarpRobotComputationGraph graph, carp.CarpRobotLabel label)
+    {
+        this._graph = graph;
+        this._label = label;
+    }
+
+    public fun GetLabel() : carp.CarpRobotLabel { return this._label; }
+
+    public fun Update(int label)
+    {
+        this._label.Update(label);
+    }
+}
+
 public class ARobotLinear
 {
     private carp.CarpRobotLinear _linear;
@@ -35,6 +54,11 @@ public class ARobotLinear
     {
         this._graph = graph;
         this._linear = linear;
+    }
+
+    public fun Copy(ARobotLinear linear)
+    {
+        this._linear.Copy(linear._linear);
     }
 
     public fun Calc(ARobotExpression input) : ARobotExpression
@@ -52,6 +76,11 @@ public class ARobotConv2D
     {
         this._graph = graph;
         this._conv2d = conv2d;
+    }
+
+    public fun Copy(ARobotConv2D conv2d)
+    {
+        this._conv2d.Copy(conv2d._conv2d);
     }
 
     public fun Calc(ARobotExpression input) : ARobotExpression

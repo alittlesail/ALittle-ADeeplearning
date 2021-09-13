@@ -53,6 +53,11 @@ function ADeeplearning.ARobotSession:CreateInput(dim_list)
 	return ADeeplearning.ARobotInput(self._graph, input)
 end
 
+function ADeeplearning.ARobotSession:CreateLabel()
+	local label = carp.CarpRobotLabel()
+	return ADeeplearning.ARobotLabel(self._graph, label)
+end
+
 function ADeeplearning.ARobotSession:CreateLinear(input_dim, output_dim)
 	local linear = carp.CarpRobotLinear(self._model, input_dim, output_dim)
 	linear:Build(self._graph)

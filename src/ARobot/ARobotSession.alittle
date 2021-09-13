@@ -3,9 +3,9 @@ namespace ADeeplearning;
 
 public class ARobotSession
 {
-    private carp.CarpRobotParameterCollection _model;
-    private carp.CarpRobotComputationGraph _graph;
-    private carp.CarpRobotAdamTrainer _trainer;
+    protected carp.CarpRobotParameterCollection _model;
+    protected carp.CarpRobotComputationGraph _graph;
+    protected carp.CarpRobotAdamTrainer _trainer;
 
     public ctor()
     {
@@ -42,6 +42,12 @@ public class ARobotSession
         var input = new carp.CarpRobotInput(dim_list[1], dim_list[2], dim_list[3]);
         input.Build(this._graph);
         return new ARobotInput(this._graph, input);
+    }
+
+    public fun CreateLabel() : ARobotLabel
+    {
+        var label = new carp.CarpRobotLabel();
+        return new ARobotLabel(this._graph, label);
     }
 
     public fun CreateLinear(int input_dim, int output_dim) : ARobotLinear

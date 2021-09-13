@@ -103,7 +103,8 @@ public await static __Plugin_Setup(ALittle.ControlSystem control, string module_
     }
 
     var require = new ALittle.Require();
-    require.AddPaths(script_base_path, "Mnist/", paths("src/Model"));
+    require.AddPaths(script_base_path, "ARobot/", paths("src/ARobot"));
+    require.AddPaths(script_base_path, "Model/", paths("src/Model"));
     require.Start();
 }
 

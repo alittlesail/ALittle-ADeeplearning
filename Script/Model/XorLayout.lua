@@ -42,9 +42,9 @@ function ADeeplearning.XorModel:Ctor()
 end
 
 function ADeeplearning.XorModel:TrainImpl(index)
+	self._session:Reset()
 	self._input:Update(self._input_list[index])
 	self._output:Update(self._output_list[index])
-	self._session:Reset()
 	local right = ALittle.Math_Abs(self._out:AsScalar() - self._output_list[index][1]) < 0.001
 	local loss = self._loss:AsScalar()
 	self._session:Train()
