@@ -92,8 +92,8 @@ function ADeeplearning.ARobotExpression:LogSoftmax()
 	return ADeeplearning.ARobotExpression(self._graph, self._graph:LogSoftmax(self._index))
 end
 
-function ADeeplearning.ARobotExpression:Dropout(rate)
-	return ADeeplearning.ARobotExpression(self._graph, self._graph:Dropout(self._index, rate))
+function ADeeplearning.ARobotExpression:Dropout(rate, training)
+	return ADeeplearning.ARobotExpression(self._graph, self._graph:Dropout(self._index, rate, training:GetLabel()))
 end
 
 function ADeeplearning.ARobotExpression:Conv2D(kernel, stride_width, stride_height, padding_type)

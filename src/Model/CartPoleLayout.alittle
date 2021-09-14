@@ -135,8 +135,9 @@ protected class CartPoleLayout : ALittle.DisplayLayout
         var r2 = (this._learn_theta_threshold_radians - ALittle.Math_Abs(this._pole_theta)) / this._learn_theta_threshold_radians - 0.5;
         var reward = r1 + r2;
 
-        this._model.SaveTransition(state, next_state, action, reward);
-        this._model.Train(32);
+        // 填满了才开始训练
+        if (this._model.SaveTransition(state, next_state, action, reward))
+        	this._model.Train(32);
 
         if (done)
         {

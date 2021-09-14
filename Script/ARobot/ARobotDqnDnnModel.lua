@@ -145,7 +145,7 @@ function ADeeplearning.ARobotDqnDnnModel:SaveTransition(state, next_state, actio
 	local q_target = reward + 0.9 * self._q_next:AsVectorAndMaxValue()
 	self._target:Update({q_target})
 	local loss = self._loss:AsScalar()
-	self._sum_tree:SaveMemory(state, next_state, action, reward, loss)
+	return self._sum_tree:SaveMemory(state, next_state, action, reward, loss)
 end
 
 function ADeeplearning.ARobotDqnDnnModel:ChooseAction(state)

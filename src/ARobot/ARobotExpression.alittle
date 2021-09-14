@@ -39,7 +39,8 @@ public class ARobotExpression
     public fun Softmax() : ARobotExpression { return new ARobotExpression(this._graph, this._graph.Softmax(this._index)); }
     public fun LogSoftmax() : ARobotExpression { return new ARobotExpression(this._graph, this._graph.LogSoftmax(this._index)); }
 
-    public fun Dropout(double rate) : ARobotExpression { return new ARobotExpression(this._graph, this._graph.Dropout(this._index, rate)); }
+    public fun Dropout(double rate, ARobotLabel training) : ARobotExpression 
+    { return new ARobotExpression(this._graph, this._graph.Dropout(this._index, rate, training.GetLabel())); }
 	public fun Conv2D(ARobotExpression kernel, int stride_width, int stride_height, bool padding_type) : ARobotExpression 
     { return new ARobotExpression(this._graph, this._graph.Conv2D(this._index, kernel._index, stride_width, stride_height, padding_type)); }
     public fun MaxPooling2D(int kernel_width, int kernel_height, [Nullable]int stride_width, [Nullable]int stride_height, [Nullable] bool padding_type) : ARobotExpression 

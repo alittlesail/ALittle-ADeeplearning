@@ -182,7 +182,7 @@ public class ARobotDqnDnnModel
         return total_loss / index_count;
     }
 
-    public fun SaveTransition(List<double> state, List<double> next_state, int action, double reward)
+    public fun SaveTransition(List<double> state, List<double> next_state, int action, double reward) : bool
     {
         this._session.Reset();
 
@@ -196,7 +196,7 @@ public class ARobotDqnDnnModel
 
         var loss = this._loss.AsScalar();
 
-        this._sum_tree.SaveMemory(state, next_state, action, reward, loss);
+        return this._sum_tree.SaveMemory(state, next_state, action, reward, loss);
     }
 
     public fun ChooseAction(List<double> state) : int

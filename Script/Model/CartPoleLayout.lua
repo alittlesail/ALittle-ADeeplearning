@@ -110,8 +110,9 @@ function ADeeplearning.CartPoleLayout:HandleFrame(frame_time)
 	local r1 = (self._x_threshold - ALittle.Math_Abs(self._cart_x)) / self._x_threshold - 0.8
 	local r2 = (self._learn_theta_threshold_radians - ALittle.Math_Abs(self._pole_theta)) / self._learn_theta_threshold_radians - 0.5
 	local reward = r1 + r2
-	self._model:SaveTransition(state, next_state, action, reward)
-	self._model:Train(32)
+	if self._model:SaveTransition(state, next_state, action, reward) then
+		self._model:Train(32)
+	end
 	if done then
 		if self._loop_frame ~= nil then
 			self._loop_frame:Stop()
