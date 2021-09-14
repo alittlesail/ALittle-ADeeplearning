@@ -37,7 +37,6 @@ function ADeeplearning.CartPoleLayout:Ctor()
 end
 
 function ADeeplearning.CartPoleLayout:TCtor()
-	self._model_path = ADeeplearning.g_ModuleBasePath .. "Other/cartpole.model"
 	self._model = ADeeplearning.ARobotDuelingDqnDnnModel(4, 2, 100, 1000)
 	self._learn_theta_threshold_radians = 12 * 2 * 3.14159265 / 360
 	self._total_mass = self._masscart + self._masspole
@@ -47,7 +46,7 @@ end
 
 function ADeeplearning.CartPoleLayout:HandleStartGameClick(event)
 	if not self._loaded then
-		self._model:Load(self._model_path)
+		self._model:Load(ADeeplearning.g_ModuleBasePath .. "Other/cartpole.model")
 		self._loaded = true
 	end
 	self:GameInit(0)
@@ -61,7 +60,7 @@ end
 
 function ADeeplearning.CartPoleLayout:HandleStopGameClick(event)
 	if self._loaded then
-		self._model:Save(self._model_path)
+		self._model:Save()
 	end
 	self:GameInit(0)
 	if self._loop_frame ~= nil then

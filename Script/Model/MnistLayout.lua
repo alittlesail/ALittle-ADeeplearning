@@ -80,8 +80,8 @@ ADeeplearning.MnistTrainLayout = Lua.Class(ADeeplearning.CommonTrainLayout, "ADe
 function ADeeplearning.MnistTrainLayout.__getter:model()
 	if self._model == nil then
 		self._model = ADeeplearning.MnistModel()
-		self._model_path = ADeeplearning.g_ModuleBasePath .. "Other/mnist.model"
 		self._model:SetMnistRoot(ADeeplearning.g_ModuleBasePath .. "Data")
+		self._model:Load(ADeeplearning.g_ModuleBasePath .. "Other/mnist.model")
 	end
 	return self._model
 end

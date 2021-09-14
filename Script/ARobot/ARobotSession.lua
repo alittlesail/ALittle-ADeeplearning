@@ -31,10 +31,20 @@ function ADeeplearning.ARobotSession:Train()
 end
 
 function ADeeplearning.ARobotSession:Load(file_path)
+	if file_path == nil then
+		return
+	end
 	self._model:Load(file_path)
+	self._file_path = file_path
 end
 
 function ADeeplearning.ARobotSession:Save(file_path)
+	if file_path == nil then
+		file_path = self._file_path
+	end
+	if file_path == nil then
+		return
+	end
 	self._model:Save(file_path)
 end
 

@@ -44,7 +44,6 @@ function ADeeplearning.CommonTrainLayout:HandleStartClick(event)
 	self._train_round_text.text = 0
 	self._cur_right_count_text.text = 0
 	self._stat:Init(1, ALittle.Math_Floor(self._stat.width), ALittle.Math_Floor(self._stat.height))
-	self.model:Load(self._model_path)
 	self._loop = ALittle.LoopFrame(Lua.Bind(self.UpdateFrame, self))
 	A_WeakLoopSystem:AddUpdater(self._loop)
 end
@@ -59,7 +58,7 @@ function ADeeplearning.CommonTrainLayout:HandleStopClick(event)
 		A_WeakLoopSystem:RemoveUpdater(self._loop)
 		self._loop = nil
 	end
-	self.model:Save(self._model_path)
+	self.model:Save()
 	self:DispatchEvent(___all_struct[958494922], {})
 end
 

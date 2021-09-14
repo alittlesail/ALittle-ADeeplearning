@@ -70,7 +70,7 @@ public class XorTrainLayout : CommonTrainLayout
         if (this._model == null)
         {
             this._model = new XorModel();
-            this._model_path = g_ModuleBasePath.."Other/xor.model";
+            this._model.Load(g_ModuleBasePath.."Other/xor.model");
         }
         return this._model;
     }

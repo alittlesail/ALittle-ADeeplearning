@@ -11,7 +11,6 @@ protected class CartPoleLayout : ALittle.DisplayLayout
 {
     private ARobotDuelingDqnDnnModel _model;
 
-    private string _model_path;
     private bool _loaded = false;
 
     private ALittle.Quad _cart_pole_cart;
@@ -43,7 +42,6 @@ protected class CartPoleLayout : ALittle.DisplayLayout
 
     public fun TCtor()
     {
-        this._model_path = g_ModuleBasePath.."Other/cartpole.model";
         this._model = new ARobotDuelingDqnDnnModel(4, 2, 100, 1000);
 
         this._learn_theta_threshold_radians = 12 * 2 * 3.14159265 / 360;
@@ -59,7 +57,7 @@ protected class CartPoleLayout : ALittle.DisplayLayout
     {
         if (!this._loaded)
         {
-            this._model.Load(this._model_path);
+            this._model.Load(g_ModuleBasePath.."Other/cartpole.model");
             this._loaded = true;
         }
 
@@ -75,7 +73,7 @@ protected class CartPoleLayout : ALittle.DisplayLayout
 
     private fun HandleStopGameClick(ALittle.UIClickEvent event)
     {
-        if (this._loaded) this._model.Save(this._model_path);
+        if (this._loaded) this._model.Save();
 
         this.GameInit(0);
 

@@ -94,7 +94,7 @@ public class ARobotDuelingDqnDnnModel
     }
 
     public fun Load(string file_path) { this._session.Load(file_path); }
-    public fun Save(string file_path) { this._session.Save(file_path); }
+    public fun Save([Nullable]string file_path) { this._session.Save(file_path); }
 
     public fun Train(int count) : double
     {

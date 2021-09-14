@@ -7,6 +7,8 @@ public class ARobotSession
     protected carp.CarpRobotComputationGraph _graph;
     protected carp.CarpRobotAdamTrainer _trainer;
 
+    private string _file_path;
+
     public ctor()
     {
         this._model = new carp.CarpRobotParameterCollection();
@@ -31,8 +33,18 @@ public class ARobotSession
         this._trainer.Update();
     }
 
-    public fun Load(string file_path) { this._model.Load(file_path); }
-    public fun Save(string file_path) { this._model.Save(file_path); }
+    public fun Load(string file_path)
+    {
+        if (file_path == null) return;
+        this._model.Load(file_path);
+        this._file_path = file_path;
+    }
+    public fun Save(string file_path)
+    {
+        if (file_path == null) file_path = this._file_path;
+        if (file_path == null) return;
+        this._model.Save(file_path);
+    }
 
     public fun CreateInput(List<int> dim_list) : ARobotInput
     {

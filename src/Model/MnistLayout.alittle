@@ -114,8 +114,8 @@ public class MnistTrainLayout : CommonTrainLayout
         if (this._model == null)
         {
             this._model = new MnistModel();
-            this._model_path = g_ModuleBasePath.."Other/mnist.model";
             this._model.SetMnistRoot(g_ModuleBasePath.."Data");
+            this._model.Load(g_ModuleBasePath.."Other/mnist.model");
         }
         return this._model;
     }

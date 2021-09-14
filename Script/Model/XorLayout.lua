@@ -67,7 +67,7 @@ ADeeplearning.XorTrainLayout = Lua.Class(ADeeplearning.CommonTrainLayout, "ADeep
 function ADeeplearning.XorTrainLayout.__getter:model()
 	if self._model == nil then
 		self._model = ADeeplearning.XorModel()
-		self._model_path = ADeeplearning.g_ModuleBasePath .. "Other/xor.model"
+		self._model:Load(ADeeplearning.g_ModuleBasePath .. "Other/xor.model")
 	end
 	return self._model
 end
