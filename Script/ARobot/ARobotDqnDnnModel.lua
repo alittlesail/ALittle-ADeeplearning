@@ -9,7 +9,20 @@ local ___pairs = pairs
 local ___ipairs = ipairs
 
 
-ADeeplearning.ARobotDuelingDqnDnn = Lua.Class(nil, "ADeeplearning.ARobotDuelingDqnDnn")
+ADeeplearning.IARobotDqnDnn = Lua.Class(nil, "ADeeplearning.IARobotDqnDnn")
+
+function ADeeplearning.IARobotDqnDnn:Ctor(session, state_count, action_count, hide_dim)
+end
+
+function ADeeplearning.IARobotDqnDnn:Copy(dnn)
+end
+
+function ADeeplearning.IARobotDqnDnn:Calc(input)
+	return nil
+end
+
+assert(ADeeplearning.IARobotDqnDnn, " extends class:ADeeplearning.IARobotDqnDnn is nil")
+ADeeplearning.ARobotDuelingDqnDnn = Lua.Class(ADeeplearning.IARobotDqnDnn, "ADeeplearning.ARobotDuelingDqnDnn")
 
 function ADeeplearning.ARobotDuelingDqnDnn:Ctor(session, state_count, action_count, hide_dim)
 	___rawset(self, "_linear", session:CreateLinear(state_count, hide_dim))
@@ -17,7 +30,8 @@ function ADeeplearning.ARobotDuelingDqnDnn:Ctor(session, state_count, action_cou
 	___rawset(self, "_advantage", session:CreateLinear(hide_dim, action_count))
 end
 
-function ADeeplearning.ARobotDuelingDqnDnn:Copy(value)
+function ADeeplearning.ARobotDuelingDqnDnn:Copy(dnn)
+	local value = ALittle.Cast(ADeeplearning.ARobotDuelingDqnDnn, ADeeplearning.IARobotDqnDnn, dnn)
 	self._linear:Copy(value._linear)
 	self._value:Copy(value._value)
 	self._advantage:Copy(value._advantage)
@@ -31,9 +45,34 @@ function ADeeplearning.ARobotDuelingDqnDnn:Calc(input)
 	return advantage:Subtraction(advantage:MeanElements(0)):Addition(value)
 end
 
-ADeeplearning.ARobotDuelingDqnDnnModel = Lua.Class(nil, "ADeeplearning.ARobotDuelingDqnDnnModel")
+assert(ADeeplearning.IARobotDqnDnn, " extends class:ADeeplearning.IARobotDqnDnn is nil")
+ADeeplearning.ARobotDqnDnn = Lua.Class(ADeeplearning.IARobotDqnDnn, "ADeeplearning.ARobotDqnDnn")
 
-function ADeeplearning.ARobotDuelingDqnDnnModel:Ctor(state_count, action_count, hide_dim, memory_capacity)
+function ADeeplearning.ARobotDqnDnn:Ctor(session, state_count, action_count, hide_dim)
+	___rawset(self, "_fc1", session:CreateLinear(state_count, hide_dim))
+	___rawset(self, "_fc2", session:CreateLinear(hide_dim, action_count))
+end
+
+function ADeeplearning.ARobotDqnDnn:Copy(dnn)
+	local value = ALittle.Cast(ADeeplearning.ARobotDqnDnn, ADeeplearning.IARobotDqnDnn, dnn)
+	self._fc1:Copy(value._fc1)
+	self._fc2:Copy(value._fc2)
+end
+
+function ADeeplearning.ARobotDqnDnn:Calc(input)
+	local x = self._fc1:Calc(input)
+	x = x:Rectify()
+	return self._fc2:Calc(x)
+end
+
+ADeeplearning.ARobotDqnTypes = {
+	NORMAL = 1,
+	DUELING = 2,
+}
+
+ADeeplearning.ARobotDqnDnnModel = Lua.Class(nil, "ADeeplearning.ARobotDqnDnnModel")
+
+function ADeeplearning.ARobotDqnDnnModel:Ctor(state_count, action_count, hide_dim, memory_capacity, type)
 	___rawset(self, "_state_count", 0)
 	___rawset(self, "_action_count", 0)
 	___rawset(self, "_learn_step_counter", 0)
@@ -46,8 +85,13 @@ function ADeeplearning.ARobotDuelingDqnDnnModel:Ctor(state_count, action_count, 
 	___rawset(self, "_reward", self._session:CreateInput({1}))
 	___rawset(self, "_target", self._session:CreateInput({1}))
 	___rawset(self, "_action", self._session:CreateLabel())
-	___rawset(self, "_eval_net", ADeeplearning.ARobotDuelingDqnDnn(self._session, state_count, action_count, hide_dim))
-	___rawset(self, "_target_net", ADeeplearning.ARobotDuelingDqnDnn(self._session, state_count, action_count, hide_dim))
+	if type == 2 then
+		___rawset(self, "_eval_net", ADeeplearning.ARobotDuelingDqnDnn(self._session, state_count, action_count, hide_dim))
+		___rawset(self, "_target_net", ADeeplearning.ARobotDuelingDqnDnn(self._session, state_count, action_count, hide_dim))
+	else
+		___rawset(self, "_eval_net", ADeeplearning.ARobotDqnDnn(self._session, state_count, action_count, hide_dim))
+		___rawset(self, "_target_net", ADeeplearning.ARobotDqnDnn(self._session, state_count, action_count, hide_dim))
+	end
 	local reward = self._reward:Calc()
 	local state = self._state:Calc()
 	local target = self._target:Calc()
@@ -58,15 +102,15 @@ function ADeeplearning.ARobotDuelingDqnDnnModel:Ctor(state_count, action_count, 
 	___rawset(self, "_loss", self._q_eval:Subtraction(target):Square())
 end
 
-function ADeeplearning.ARobotDuelingDqnDnnModel:Load(file_path)
+function ADeeplearning.ARobotDqnDnnModel:Load(file_path)
 	self._session:Load(file_path)
 end
 
-function ADeeplearning.ARobotDuelingDqnDnnModel:Save(file_path)
+function ADeeplearning.ARobotDqnDnnModel:Save(file_path)
 	self._session:Save(file_path)
 end
 
-function ADeeplearning.ARobotDuelingDqnDnnModel:Train(count)
+function ADeeplearning.ARobotDqnDnnModel:Train(count)
 	local index_list = self._sum_tree:SelectMemory(count)
 	local index_count = ALittle.List_Len(index_list)
 	if index_count == 0 then
@@ -92,7 +136,7 @@ function ADeeplearning.ARobotDuelingDqnDnnModel:Train(count)
 	return total_loss / index_count
 end
 
-function ADeeplearning.ARobotDuelingDqnDnnModel:SaveTransition(state, next_state, action, reward)
+function ADeeplearning.ARobotDqnDnnModel:SaveTransition(state, next_state, action, reward)
 	self._session:Reset()
 	self._reward:Update({reward})
 	self._state:Update(state)
@@ -104,7 +148,7 @@ function ADeeplearning.ARobotDuelingDqnDnnModel:SaveTransition(state, next_state
 	self._sum_tree:SaveMemory(state, next_state, action, reward, loss)
 end
 
-function ADeeplearning.ARobotDuelingDqnDnnModel:ChooseAction(state)
+function ADeeplearning.ARobotDqnDnnModel:ChooseAction(state)
 	self._session:Reset()
 	self._state:Update(state)
 	return self._out:AsVectorAndArgmax()

@@ -1,7 +1,14 @@
 
 namespace ADeeplearning;
 
-public class ARobotDuelingDqnDnn
+public class IARobotDqnDnn
+{
+    public ctor(ARobotSession session, int state_count, int action_count, int hide_dim) { }
+    public fun Copy(IARobotDqnDnn dnn) { }
+    public fun Calc(ARobotExpression input) : ARobotExpression { return null; }
+}
+
+public class ARobotDuelingDqnDnn : IARobotDqnDnn
 {
     private ARobotLinear _linear;
     private ARobotLinear _value;
@@ -14,8 +21,10 @@ public class ARobotDuelingDqnDnn
         this._advantage = session.CreateLinear(hide_dim, action_count);
     }
 
-    public fun Copy(ARobotDuelingDqnDnn value)
+    public fun Copy(IARobotDqnDnn dnn)
     {
+        var value = ALittle.Cast{ARobotDuelingDqnDnn}(dnn);
+
         this._linear.Copy(value._linear);
         this._value.Copy(value._value);
         this._advantage.Copy(value._advantage);
@@ -38,11 +47,45 @@ public class ARobotDuelingDqnDnn
     }
 }
 
-public class ARobotDuelingDqnDnnModel
+public class ARobotDqnDnn : IARobotDqnDnn
+{
+    private ARobotLinear _fc1;
+    private ARobotLinear _fc2;
+
+    public ctor(ARobotSession session, int state_count, int action_count, int hide_dim)
+    {
+        this._fc1 = session.CreateLinear(state_count, hide_dim);
+        this._fc2 = session.CreateLinear(hide_dim, action_count);
+    }
+
+    public fun Copy(IARobotDqnDnn dnn)
+    {
+        var value = ALittle.Cast{ARobotDqnDnn}(dnn);
+
+        this._fc1.Copy(value._fc1);
+        this._fc2.Copy(value._fc2);
+    }
+
+    public fun Calc(ARobotExpression input) : ARobotExpression
+    {
+		// 全连接隐藏层
+		var x = this._fc1.Calc(input);
+		x = x.Rectify();
+		return this._fc2.Calc(x);
+    }
+}
+
+public enum ARobotDqnTypes
+{
+    NORMAL = 1;
+    DUELING = 2;
+}
+
+public class ARobotDqnDnnModel
 {
     private carp.CarpRobotSumTree _sum_tree;
-    private ARobotDuelingDqnDnn _eval_net;
-    private ARobotDuelingDqnDnn _target_net;
+    private IARobotDqnDnn _eval_net;
+    private IARobotDqnDnn _target_net;
 
     private ARobotInput _state;
     private ARobotInput _next_state;
@@ -61,7 +104,7 @@ public class ARobotDuelingDqnDnnModel
     private int _learn_step_counter = 0;
     private ARobotSession _session;
 
-    public ctor(int state_count, int action_count, int hide_dim, int memory_capacity)
+    public ctor(int state_count, int action_count, int hide_dim, int memory_capacity, [Nullable] int type)
     {
         this._session = new ARobotSession();
         this._state_count = state_count;
@@ -73,8 +116,17 @@ public class ARobotDuelingDqnDnnModel
         this._reward = this._session.CreateInput([1]);
         this._target = this._session.CreateInput([1]);
         this._action = this._session.CreateLabel();
-        this._eval_net = new ARobotDuelingDqnDnn(this._session, state_count, action_count, hide_dim);
-        this._target_net = new ARobotDuelingDqnDnn(this._session, state_count, action_count, hide_dim);
+
+        if (type == ARobotDqnTypes.DUELING)
+        {
+            this._eval_net = new ARobotDuelingDqnDnn(this._session, state_count, action_count, hide_dim);
+            this._target_net = new ARobotDuelingDqnDnn(this._session, state_count, action_count, hide_dim);
+        }
+        else
+        {
+            this._eval_net = new ARobotDqnDnn(this._session, state_count, action_count, hide_dim);
+            this._target_net = new ARobotDqnDnn(this._session, state_count, action_count, hide_dim);
+        }
 
         // 输入参数准备
         var reward = this._reward.Calc();
