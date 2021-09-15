@@ -19,6 +19,15 @@ public class ARobotExpression
     public fun AsScalar() : double { return this._graph.AsScalar(this._index); }
     public fun AsVectorAndArgmax() : int { return this._graph.AsVectorAndArgmax(this._index); }
     public fun AsVectorAndMaxValue() : double { return this._graph.AsVectorAndMaxValue(this._index); }
+    public fun GetDim() : List<int>
+    {
+        var dims = new List<int>();
+        var dim = this._graph.GetDim(this._index);
+        if (dim == null) return dims;
+        var dim_count = dim.Count();
+        for (var i = 1; i <= dim_count; 1) dims[i] = dim.Get(i - 1);
+        return dims;
+    }
 
     public fun Negate() : ARobotExpression { return new ARobotExpression(this._graph, this._graph.Negate(this._index)); }
     public fun Addition(ARobotExpression value) : ARobotExpression { return new ARobotExpression(this._graph, this._graph.Addition(this._index, value._index)); }

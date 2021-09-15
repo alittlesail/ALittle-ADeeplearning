@@ -43,7 +43,7 @@ function ADeeplearning.__Module_Setup(layer_group, control, module_base_path, sc
 	end
 	local require = ALittle.Require()
 	require:AddPaths(script_base_path, "ARobot/", {{"ARobotComponent"}
-		,{"ARobotDqnDnnModel"}
+		,{"ARobotDqnModel"}
 		,{"ARobotExpression"}
 		,{"ARobotModel"}
 		,{"ARobotSession"}})
@@ -88,7 +88,7 @@ function ADeeplearning.__Plugin_Setup(control, module_base_path, script_base_pat
 	end
 	local require = ALittle.Require()
 	require:AddPaths(script_base_path, "ARobot/", {{"ARobotComponent"}
-		,{"ARobotDqnDnnModel"}
+		,{"ARobotDqnModel"}
 		,{"ARobotExpression"}
 		,{"ARobotModel"}
 		,{"ARobotSession"}})

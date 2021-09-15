@@ -1,6 +1,12 @@
 
 register namespace carp;
 
+public class CarpRobotDim
+{
+    public fun Count() : int { }
+    public fun Get(int index) : int { }
+}
+
 public class CarpRobotComputationGraph
 {
     public fun Clear() {}
@@ -9,6 +15,7 @@ public class CarpRobotComputationGraph
     public fun AsScalar(int index) : double {}
     public fun AsVectorAndArgmax(int index) : int {}
     public fun AsVectorAndMaxValue(int index) : double {}
+    public fun GetDim(int index) : CarpRobotDim {}
 
     public fun Negate(int index) : int {}
     public fun Addition(int index1, int index2) : int {}

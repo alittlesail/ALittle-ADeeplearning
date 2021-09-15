@@ -28,6 +28,22 @@ function ADeeplearning.ARobotExpression:AsVectorAndMaxValue()
 	return self._graph:AsVectorAndMaxValue(self._index)
 end
 
+function ADeeplearning.ARobotExpression:GetDim()
+	local dims = {}
+	local dim = self._graph:GetDim(self._index)
+	if dim == nil then
+		return dims
+	end
+	local dim_count = dim:Count()
+	local i = 1
+	while true do
+		if not(i <= dim_count) then break end
+		dims[i] = dim:Get(i - 1)
+		i = i+(1)
+	end
+	return dims
+end
+
 function ADeeplearning.ARobotExpression:Negate()
 	return ADeeplearning.ARobotExpression(self._graph, self._graph:Negate(self._index))
 end
