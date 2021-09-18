@@ -30,22 +30,5 @@ end
 function ADeeplearning.GCenter:Shutdown()
 end
 
-function ADeeplearning.GCenter:Wav2MFCC(max_count)
-end
-
-function ADeeplearning.GCenter:Thchs302DescFile(thchs30_path)
-	local out_file = io.open(ADeeplearning.g_ModuleBasePath .. "Data/thchs30.txt", "w")
-	local file_map = ALittle.File_GetFileAttrByDir(thchs30_path)
-	for file_path, _ in ___pairs(file_map) do
-		if ALittle.File_GetFileExtByPath(file_path) == "trn" then
-			local content = ALittle.File_ReadTextFromStdFile(file_path)
-			out_file:write(ALittle.File_GetJustFileNameByPath(file_path))
-			out_file:write("\n")
-			out_file:write(content)
-		end
-	end
-	out_file:close()
-end
-
 ADeeplearning.g_GCenter = ADeeplearning.GCenter()
 end

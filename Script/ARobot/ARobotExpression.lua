@@ -28,6 +28,10 @@ function ADeeplearning.ARobotExpression:AsVectorAndMaxValue()
 	return self._graph:AsVectorAndMaxValue(self._index)
 end
 
+function ADeeplearning.ARobotExpression:AsVectorAndGetValue(index)
+	return self._graph:AsVectorAndGetValue(self._index, index)
+end
+
 function ADeeplearning.ARobotExpression:GetDim()
 	local dims = {}
 	local dim = self._graph:GetDim(self._index)
@@ -139,6 +143,7 @@ function ADeeplearning.ARobotExpression:Reshape(dim_list)
 	if dim_list[3] == nil then
 		dim_list[3] = 0
 	end
+	Lua.Assert(dim_list[4] == nil, "不支持超过3个参数")
 	return ADeeplearning.ARobotExpression(self._graph, self._graph:Reshape(self._index, dim_list[1], dim_list[2], dim_list[3]))
 end
 
@@ -148,6 +153,23 @@ end
 
 function ADeeplearning.ARobotExpression:MeanElements(dim)
 	return ADeeplearning.ARobotExpression(self._graph, self._graph:MeanElements(self._index, dim))
+end
+
+function ADeeplearning.ARobotExpression:Concatenate(inputs)
+	local expr_0 = 0
+	local expr_1 = 0
+	local expr_2 = 0
+	if inputs[1] ~= nil then
+		expr_0 = inputs[1]._index
+	end
+	if inputs[2] ~= nil then
+		expr_1 = inputs[2]._index
+	end
+	if inputs[3] ~= nil then
+		expr_2 = inputs[3]._index
+	end
+	Lua.Assert(inputs[4] == nil, "不支持超过3个参数")
+	return ADeeplearning.ARobotExpression(self._graph, self._graph:Concatenate(self._index, expr_0, expr_1, expr_2))
 end
 
 end

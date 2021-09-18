@@ -88,3 +88,87 @@ public class ARobotConv2D
         return new ARobotExpression(this._graph, this._conv2d.Calc(this._graph, input._index));
     }
 }
+
+public class ARobotLstm
+{
+    private carp.CarpRobotLstm _lstm;
+    private carp.CarpRobotComputationGraph _graph;
+
+    public ctor(carp.CarpRobotComputationGraph graph, carp.CarpRobotLstm lstm)
+    {
+        this._graph = graph;
+        this._lstm = lstm;
+    }
+
+    public fun Build(bool update) { this._lstm.Build(this._graph, update); }
+    public fun SetDropoutRate(double value) { this._lstm.SetDropoutRate(value);}
+    public fun SetDropoutRateH(double value) { this._lstm.SetDropoutRateH(value); }
+    public fun AddInput(ARobotExpression input) : ARobotExpression { return new ARobotExpression(this._graph, this._lstm.AddInput(this._graph, input._index)); }
+}
+
+public class ARobotBiLstm
+{
+    private carp.CarpRobotLstm _l2r_lstm;
+    private carp.CarpRobotLstm _r2l_lstm;
+    private carp.CarpRobotComputationGraph _graph;
+
+    public ctor(carp.CarpRobotComputationGraph graph, carp.CarpRobotLstm l2r_lstm, carp.CarpRobotLstm r2l_lstm)
+    {
+        this._graph = graph;
+        this._l2r_lstm = l2r_lstm;
+        this._r2l_lstm = r2l_lstm;
+    }
+
+    public fun Build(bool update)
+    {
+        this._l2r_lstm.Build(this._graph, update);
+        this._r2l_lstm.Build(this._graph, update);
+    }
+
+    public fun SetDropoutRate(double value)
+    {
+        this._l2r_lstm.SetDropoutRate(value);
+        this._r2l_lstm.SetDropoutRate(value);
+    }
+
+    public fun SetDropoutRateH(double value)
+    {
+        this._l2r_lstm.SetDropoutRateH(value);
+        this._r2l_lstm.SetDropoutRateH(value);
+    }
+
+    public fun FullLstm(List<ARobotExpression> input_list) : List<ARobotExpression>
+    {
+    	var input_len = ALittle.List_Len(input_list);
+
+    	var l2r_output = new List<ARobotExpression>();
+    	var r2l_output = new List<ARobotExpression>();
+        var out_list = new List<ARobotExpression>();
+
+        for (var i = 1; i <= input_len; 1)
+        {
+            l2r_output[i] = new ARobotExpression(this._graph, this._l2r_lstm.AddInput(this._graph, input_list[i]._index));
+            r2l_output[input_len - i + 1] = new ARobotExpression(this._graph, this._r2l_lstm.AddInput(this._graph, input_list[input_len - i + 1]._index));
+        }
+
+        for (var i = 1; i <= input_len; 1)
+            ALittle.List_Push(out_list, l2r_output[i].Concatenate([r2l_output[i]]));
+
+        return out_list;
+    }
+
+    public fun EmbeddingLstm(List<ARobotExpression> input_list) : ARobotExpression
+    {
+    	var input_len = ALittle.List_Len(input_list);
+
+        var l2r:ARobotExpression;
+        var r2l:ARobotExpression;
+        for (var i = 1; i <= input_len; 1)
+		{
+			l2r = new ARobotExpression(this._graph, this._l2r_lstm.AddInput(this._graph, input_list[i]._index));
+			r2l = new ARobotExpression(this._graph, this._r2l_lstm.AddInput(this._graph, input_list[input_len - i + 1]._index));
+		}
+
+        return l2r.Concatenate([r2l]);
+    }
+}

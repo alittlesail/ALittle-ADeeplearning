@@ -21,6 +21,7 @@ end
 ADeeplearning.ARobotDqnTypes = {
 	NORMAL = 1,
 	DUELING = 2,
+	DOUBLE = 3,
 }
 
 ADeeplearning.ARobotDqnModel = Lua.Class(nil, "ADeeplearning.ARobotDqnModel")
@@ -40,7 +41,10 @@ function ADeeplearning.ARobotDqnModel:InitGraph(action_count, memory_capacity)
 	local next_state = self._next_state:Calc()
 	self._out = self._eval_net:Calc(state)
 	self._q_eval = self._out:PickElement(self._action, 0)
-	self._q_next = self._target_net:Calc(next_state)
+	self._target_q_next = self._target_net:Calc(next_state)
+	if self._model_type == 3 then
+		self._q_next = self._eval_net:Calc(next_state)
+	end
 	self._loss = self._q_eval:Subtraction(target):Square()
 end
 
@@ -69,8 +73,14 @@ function ADeeplearning.ARobotDqnModel:Train(count)
 		self._sum_tree:GetState(index, self._state:GetInput())
 		self._sum_tree:GetNextState(index, self._next_state:GetInput())
 		local action = self._sum_tree:GetAction(index, self._action:GetLabel())
-		local q_target = reward + 0.9 * self._q_next:AsVectorAndMaxValue()
-		self._target:Update({q_target})
+		if self._model_type == 3 then
+			local next_action = self._target_q_next:AsVectorAndArgmax()
+			local q_target = reward + 0.9 * self._q_next:AsVectorAndGetValue(next_action)
+			self._target:Update({q_target})
+		else
+			local q_target = reward + 0.9 * self._target_q_next:AsVectorAndMaxValue()
+			self._target:Update({q_target})
+		end
 		local loss = self._loss:AsScalar()
 		self._session:Train()
 		total_loss = total_loss + (loss)
@@ -142,6 +152,7 @@ assert(ADeeplearning.ARobotDqnModel, " extends class:ADeeplearning.ARobotDqnMode
 ADeeplearning.ARobotDqnDnnModel = Lua.Class(ADeeplearning.ARobotDqnModel, "ADeeplearning.ARobotDqnDnnModel")
 
 function ADeeplearning.ARobotDqnDnnModel:Ctor(state_count, action_count, hide_dim, memory_capacity, type)
+	___rawset(self, "_model_type", type)
 	___rawset(self, "_session", ADeeplearning.ARobotSession())
 	___rawset(self, "_state", self._session:CreateInput({state_count}))
 	___rawset(self, "_next_state", self._session:CreateInput({state_count}))
@@ -158,10 +169,16 @@ end
 assert(ADeeplearning.IARobotDqn, " extends class:ADeeplearning.IARobotDqn is nil")
 ADeeplearning.ARobotDuelingDqnCnn = Lua.Class(ADeeplearning.IARobotDqn, "ADeeplearning.ARobotDuelingDqnCnn")
 
-function ADeeplearning.ARobotDuelingDqnCnn:Ctor(session, input_width, input_height, action_count, conv2d_dim, linear_dim)
+function ADeeplearning.ARobotDuelingDqnCnn:Ctor(session, input_width, input_height, action_count, conv2d_dim_list, linear_dim)
 	___rawset(self, "_reshapre", 0)
-	___rawset(self, "_conv2d", session:CreateConv2D(1, conv2d_dim, 2, 2, 1, 1, false))
-	___rawset(self, "_reshapre", conv2d_dim * input_width * input_height)
+	___rawset(self, "_conv2d_list", {})
+	local last_input_dim = 1
+	for index, dim in ___ipairs(conv2d_dim_list) do
+		local conv2d = session:CreateConv2D(last_input_dim, dim, 2, 2, 1, 1, false)
+		self._conv2d_list[index] = conv2d
+		last_input_dim = dim
+	end
+	___rawset(self, "_reshapre", last_input_dim * input_width * input_height)
 	___rawset(self, "_linear", session:CreateLinear(self._reshapre, linear_dim))
 	___rawset(self, "_value", session:CreateLinear(linear_dim, 1))
 	___rawset(self, "_advantage", session:CreateLinear(linear_dim, action_count))
@@ -169,14 +186,19 @@ end
 
 function ADeeplearning.ARobotDuelingDqnCnn:Copy(cnn)
 	local value = ALittle.Cast(ADeeplearning.ARobotDuelingDqnCnn, ADeeplearning.IARobotDqn, cnn)
-	self._conv2d:Copy(value._conv2d)
+	for index, conv2d in ___ipairs(self._conv2d_list) do
+		self._conv2d_list[index]:Copy(value._conv2d_list[index])
+	end
 	self._linear:Copy(value._linear)
 	self._value:Copy(value._value)
 	self._advantage:Copy(value._advantage)
 end
 
 function ADeeplearning.ARobotDuelingDqnCnn:Calc(input)
-	local x = self._conv2d:Calc(input):Rectify()
+	local x = input
+	for index, conv2d in ___ipairs(self._conv2d_list) do
+		x = conv2d:Calc(x):Rectify()
+	end
 	x = x:Reshape({self._reshapre})
 	x = self._linear:Calc(x):Rectify()
 	local value = self._value:Calc(x)
@@ -187,41 +209,53 @@ end
 assert(ADeeplearning.IARobotDqn, " extends class:ADeeplearning.IARobotDqn is nil")
 ADeeplearning.ARobotDqnCnn = Lua.Class(ADeeplearning.IARobotDqn, "ADeeplearning.ARobotDqnCnn")
 
-function ADeeplearning.ARobotDqnCnn:Ctor(session, input_width, input_height, action_count, conv2d_dim, linear_dim)
+function ADeeplearning.ARobotDqnCnn:Ctor(session, input_width, input_height, action_count, conv2d_dim_list, linear_dim)
 	___rawset(self, "_reshapre", 0)
-	___rawset(self, "_conv2d", session:CreateConv2D(1, conv2d_dim, 2, 2, 1, 1, false))
-	___rawset(self, "_reshapre", conv2d_dim * input_width * input_height)
-	___rawset(self, "_fc1", session:CreateLinear(self._reshapre, linear_dim))
-	___rawset(self, "_fc2", session:CreateLinear(linear_dim, action_count))
+	___rawset(self, "_conv2d_list", {})
+	local last_input_dim = 1
+	for index, dim in ___ipairs(conv2d_dim_list) do
+		local conv2d = session:CreateConv2D(last_input_dim, dim, 2, 2, 1, 1, false)
+		self._conv2d_list[index] = conv2d
+		last_input_dim = dim
+	end
+	___rawset(self, "_reshapre", last_input_dim * input_width * input_height)
+	___rawset(self, "_fc_1", session:CreateLinear(self._reshapre, linear_dim))
+	___rawset(self, "_fc_2", session:CreateLinear(linear_dim, action_count))
 end
 
 function ADeeplearning.ARobotDqnCnn:Copy(cnn)
 	local value = ALittle.Cast(ADeeplearning.ARobotDqnCnn, ADeeplearning.IARobotDqn, cnn)
-	self._conv2d:Copy(value._conv2d)
-	self._fc1:Copy(value._fc1)
-	self._fc2:Copy(value._fc2)
+	for index, conv2d in ___ipairs(self._conv2d_list) do
+		self._conv2d_list[index]:Copy(value._conv2d_list[index])
+	end
+	self._fc_1:Copy(value._fc_1)
+	self._fc_2:Copy(value._fc_2)
 end
 
 function ADeeplearning.ARobotDqnCnn:Calc(input)
-	local x = self._conv2d:Calc(input):Rectify()
+	local x = input
+	for index, conv2d in ___ipairs(self._conv2d_list) do
+		x = conv2d:Calc(x):Rectify()
+	end
 	x = x:Reshape({self._reshapre})
-	x = self._fc1:Calc(x):Rectify()
-	return self._fc2:Calc(x)
+	x = self._fc_1:Calc(x):Rectify()
+	return self._fc_2:Calc(x)
 end
 
 assert(ADeeplearning.ARobotDqnModel, " extends class:ADeeplearning.ARobotDqnModel is nil")
 ADeeplearning.ARobotDqnCnnModel = Lua.Class(ADeeplearning.ARobotDqnModel, "ADeeplearning.ARobotDqnCnnModel")
 
-function ADeeplearning.ARobotDqnCnnModel:Ctor(input_width, input_height, action_count, conv2d_dim, linear_dim, memory_capacity, type)
+function ADeeplearning.ARobotDqnCnnModel:Ctor(input_width, input_height, action_count, conv2d_dim_list, linear_dim, memory_capacity, type)
+	___rawset(self, "_model_type", type)
 	___rawset(self, "_session", ADeeplearning.ARobotSession())
 	___rawset(self, "_state", self._session:CreateInput({input_width, input_height, 1}))
 	___rawset(self, "_next_state", self._session:CreateInput({input_width, input_height, 1}))
 	if type == 2 then
-		___rawset(self, "_eval_net", ADeeplearning.ARobotDuelingDqnCnn(self._session, input_width, input_height, action_count, conv2d_dim, linear_dim))
-		___rawset(self, "_target_net", ADeeplearning.ARobotDuelingDqnCnn(self._session, input_width, input_height, action_count, conv2d_dim, linear_dim))
+		___rawset(self, "_eval_net", ADeeplearning.ARobotDuelingDqnCnn(self._session, input_width, input_height, action_count, conv2d_dim_list, linear_dim))
+		___rawset(self, "_target_net", ADeeplearning.ARobotDuelingDqnCnn(self._session, input_width, input_height, action_count, conv2d_dim_list, linear_dim))
 	else
-		___rawset(self, "_eval_net", ADeeplearning.ARobotDqnCnn(self._session, input_width, input_height, action_count, conv2d_dim, linear_dim))
-		___rawset(self, "_target_net", ADeeplearning.ARobotDqnCnn(self._session, input_width, input_height, action_count, conv2d_dim, linear_dim))
+		___rawset(self, "_eval_net", ADeeplearning.ARobotDqnCnn(self._session, input_width, input_height, action_count, conv2d_dim_list, linear_dim))
+		___rawset(self, "_target_net", ADeeplearning.ARobotDqnCnn(self._session, input_width, input_height, action_count, conv2d_dim_list, linear_dim))
 	end
 	self:InitGraph(action_count, memory_capacity)
 end

@@ -11,6 +11,7 @@ public enum ARobotDqnTypes
 {
     NORMAL = 1;
     DUELING = 2;
+    DOUBLE = 3;
 }
 
 public class ARobotDqnModel
@@ -29,9 +30,12 @@ public class ARobotDqnModel
     private ARobotExpression _loss;
     private ARobotExpression _q_eval;
     private ARobotExpression _q_next;
+    private ARobotExpression _target_q_next;
 
     private int _learn_step_counter = 0;
     private ARobotSession _session;
+
+    private int _model_type;
 
     private fun InitGraph(int action_count, int memory_capacity)
     {
@@ -49,9 +53,11 @@ public class ARobotDqnModel
         // 针对做过的动作action, 来选 q_eval 的值, (q_eval 原本有所有动作的值)
         this._out = this._eval_net.Calc(state);
         this._q_eval = this._out.PickElement(this._action, 0);
-
         // q估计
-        this._q_next = this._target_net.Calc(next_state);
+        this._target_q_next = this._target_net.Calc(next_state);
+
+        if (this._model_type == ARobotDqnTypes.DOUBLE)
+            this._q_next = this._eval_net.Calc(next_state);
 
         // 计算q现实，和q估计的loss
         this._loss = this._q_eval.Subtraction(target).Square();
@@ -81,9 +87,17 @@ public class ARobotDqnModel
             this._sum_tree.GetNextState(index, this._next_state.GetInput());
             var action = this._sum_tree.GetAction(index, this._action.GetLabel());
         
-            // 准备目标值
-    		var q_target = reward + 0.9 * this._q_next.AsVectorAndMaxValue();
-            this._target.Update([q_target]);
+            if (this._model_type == ARobotDqnTypes.DOUBLE)
+            {
+                var next_action = this._target_q_next.AsVectorAndArgmax();
+                var q_target = reward + 0.9 * this._q_next.AsVectorAndGetValue(next_action);
+                this._target.Update([q_target]);
+            }
+            else
+            {
+                var q_target = reward + 0.9 * this._target_q_next.AsVectorAndMaxValue();
+                this._target.Update([q_target]);
+            }
 
     		var loss = this._loss.AsScalar();
 
@@ -188,6 +202,7 @@ public class ARobotDqnDnnModel : ARobotDqnModel
 {
     public ctor(int state_count, int action_count, int hide_dim, int memory_capacity, [Nullable] int type)
     {
+        this._model_type = type;
         this._session = new ARobotSession();
         this._state = this._session.CreateInput([state_count]);
         this._next_state = this._session.CreateInput([state_count]);
@@ -209,17 +224,24 @@ public class ARobotDqnDnnModel : ARobotDqnModel
 
 public class ARobotDuelingDqnCnn : IARobotDqn
 {
-    private ARobotConv2D _conv2d;
+    private List<ARobotConv2D> _conv2d_list;
     private ARobotLinear _linear;
     private ARobotLinear _value;
     private ARobotLinear _advantage;
 
     private int _reshapre = 0;
 
-    public ctor(ARobotSession session, int input_width, int input_height, int action_count, int conv2d_dim, int linear_dim)
+    public ctor(ARobotSession session, int input_width, int input_height, int action_count, List<int> conv2d_dim_list, int linear_dim)
     {
-        this._conv2d = session.CreateConv2D(1, conv2d_dim, 2, 2, 1, 1, false);
-        this._reshapre = conv2d_dim * input_width * input_height;
+        this._conv2d_list = new List<ARobotConv2D>();
+        var last_input_dim = 1;
+        for (var index, dim in conv2d_dim_list)
+        {
+            var conv2d = session.CreateConv2D(last_input_dim, dim, 2, 2, 1, 1, false);
+            this._conv2d_list[index] = conv2d;
+            last_input_dim = dim;
+        }
+        this._reshapre = last_input_dim * input_width * input_height;
         this._linear = session.CreateLinear(this._reshapre, linear_dim);
         this._value = session.CreateLinear(linear_dim, 1);
         this._advantage = session.CreateLinear(linear_dim, action_count);
@@ -229,7 +251,8 @@ public class ARobotDuelingDqnCnn : IARobotDqn
     {
         var value = ALittle.Cast{ARobotDuelingDqnCnn}(cnn);
 
-        this._conv2d.Copy(value._conv2d);
+        for (var index, conv2d in this._conv2d_list)
+        	this._conv2d_list[index].Copy(value._conv2d_list[index]);
         this._linear.Copy(value._linear);
         this._value.Copy(value._value);
         this._advantage.Copy(value._advantage);
@@ -238,7 +261,9 @@ public class ARobotDuelingDqnCnn : IARobotDqn
     public fun Calc(ARobotExpression input) : ARobotExpression
     {
         // 卷积层
-        var x = this._conv2d.Calc(input).Rectify();
+        var x = input;
+        for (var index, conv2d in this._conv2d_list)
+        	x = conv2d.Calc(x).Rectify();
         // 转为向量
         x = x.Reshape([this._reshapre]);
 		// 全连接隐藏层
@@ -257,58 +282,69 @@ public class ARobotDuelingDqnCnn : IARobotDqn
 
 public class ARobotDqnCnn : IARobotDqn
 {
-    private ARobotConv2D _conv2d;
-    private ARobotLinear _fc1;
-    private ARobotLinear _fc2;
+    private List<ARobotConv2D> _conv2d_list;
+    private ARobotLinear _fc_1;
+    private ARobotLinear _fc_2;
 
     private int _reshapre = 0;
 
-    public ctor(ARobotSession session, int input_width, int input_height, int action_count, int conv2d_dim, int linear_dim)
+    public ctor(ARobotSession session, int input_width, int input_height, int action_count, List<int> conv2d_dim_list, int linear_dim)
     {
-        this._conv2d = session.CreateConv2D(1, conv2d_dim, 2, 2, 1, 1, false);
-        this._reshapre = conv2d_dim * input_width * input_height;
-        this._fc1 = session.CreateLinear(this._reshapre, linear_dim);
-        this._fc2 = session.CreateLinear(linear_dim, action_count);
+        this._conv2d_list = new List<ARobotConv2D>();
+        var last_input_dim = 1;
+        for (var index, dim in conv2d_dim_list)
+        {
+            var conv2d = session.CreateConv2D(last_input_dim, dim, 2, 2, 1, 1, false);
+            this._conv2d_list[index] = conv2d;
+            last_input_dim = dim;
+        }
+        this._reshapre = last_input_dim * input_width * input_height;
+        this._fc_1 = session.CreateLinear(this._reshapre, linear_dim);
+        this._fc_2 = session.CreateLinear(linear_dim, action_count);
     }
 
     public fun Copy(IARobotDqn cnn)
     {
         var value = ALittle.Cast{ARobotDqnCnn}(cnn);
 
-        this._conv2d.Copy(value._conv2d);
-        this._fc1.Copy(value._fc1);
-        this._fc2.Copy(value._fc2);
+        for (var index, conv2d in this._conv2d_list)
+        	this._conv2d_list[index].Copy(value._conv2d_list[index]);
+        this._fc_1.Copy(value._fc_1);
+        this._fc_2.Copy(value._fc_2);
     }
 
     public fun Calc(ARobotExpression input) : ARobotExpression
     {
         // 卷积层
-        var x = this._conv2d.Calc(input).Rectify();
+        var x = input;
+        for (var index, conv2d in this._conv2d_list)
+        	x = conv2d.Calc(x).Rectify();
         x = x.Reshape([this._reshapre]);
 
 		// 全连接隐藏层
-		x = this._fc1.Calc(x).Rectify();
-		return this._fc2.Calc(x);
+		x = this._fc_1.Calc(x).Rectify();
+		return this._fc_2.Calc(x);
     }
 }
 
 public class ARobotDqnCnnModel : ARobotDqnModel
 {
-    public ctor(int input_width, int input_height, int action_count, int conv2d_dim, int linear_dim, int memory_capacity, [Nullable] int type)
+    public ctor(int input_width, int input_height, int action_count, List<int> conv2d_dim_list, int linear_dim, int memory_capacity, [Nullable] int type)
     {
+        this._model_type = type;
         this._session = new ARobotSession();
         this._state = this._session.CreateInput([input_width, input_height, 1]);
         this._next_state = this._session.CreateInput([input_width, input_height, 1]);
     
         if (type == ARobotDqnTypes.DUELING)
         {
-            this._eval_net = new ARobotDuelingDqnCnn(this._session, input_width, input_height, action_count, conv2d_dim, linear_dim);
-            this._target_net = new ARobotDuelingDqnCnn(this._session, input_width, input_height, action_count, conv2d_dim, linear_dim);
+            this._eval_net = new ARobotDuelingDqnCnn(this._session, input_width, input_height, action_count, conv2d_dim_list, linear_dim);
+            this._target_net = new ARobotDuelingDqnCnn(this._session, input_width, input_height, action_count, conv2d_dim_list, linear_dim);
         }
         else
         {
-            this._eval_net = new ARobotDqnCnn(this._session, input_width, input_height, action_count, conv2d_dim, linear_dim);
-            this._target_net = new ARobotDqnCnn(this._session, input_width, input_height, action_count, conv2d_dim, linear_dim);
+            this._eval_net = new ARobotDqnCnn(this._session, input_width, input_height, action_count, conv2d_dim_list, linear_dim);
+            this._target_net = new ARobotDqnCnn(this._session, input_width, input_height, action_count, conv2d_dim_list, linear_dim);
         }
 
         this.InitGraph(action_count, memory_capacity);

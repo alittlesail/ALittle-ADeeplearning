@@ -19,6 +19,7 @@ public class ARobotExpression
     public fun AsScalar() : double { return this._graph.AsScalar(this._index); }
     public fun AsVectorAndArgmax() : int { return this._graph.AsVectorAndArgmax(this._index); }
     public fun AsVectorAndMaxValue() : double { return this._graph.AsVectorAndMaxValue(this._index); }
+    public fun AsVectorAndGetValue(int index) : double { return this._graph.AsVectorAndGetValue(this._index, index); }
     public fun GetDim() : List<int>
     {
         var dims = new List<int>();
@@ -64,8 +65,20 @@ public class ARobotExpression
         if (dim_list[1] == null) dim_list[1] = 0;
         if (dim_list[2] == null) dim_list[2] = 0;
         if (dim_list[3] == null) dim_list[3] = 0;
+        assert (dim_list[4] == null, "不支持超过3个参数");
         return new ARobotExpression(this._graph, this._graph.Reshape(this._index, dim_list[1], dim_list[2], dim_list[3]));
     }
     public fun PickElement(ARobotLabel label, int dim) : ARobotExpression { return new ARobotExpression(this._graph, this._graph.PickElement(this._index, label.GetLabel(), dim)); }
     public fun MeanElements(int dim) : ARobotExpression { return new ARobotExpression(this._graph, this._graph.MeanElements(this._index, dim)); }
+    public fun Concatenate(List<ARobotExpression> inputs) : ARobotExpression
+    {
+        var expr_0 = 0;
+        var expr_1 = 0;
+        var expr_2 = 0;
+        if (inputs[1] != null) expr_0 = inputs[1]._index;
+        if (inputs[2] != null) expr_1 = inputs[2]._index;
+        if (inputs[3] != null) expr_2 = inputs[3]._index;
+        assert (inputs[4] == null, "不支持超过3个参数");
+        return new ARobotExpression(this._graph, this._graph.Concatenate(this._index, expr_0, expr_1, expr_2));
+    }
 }

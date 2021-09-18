@@ -89,4 +89,15 @@ function ADeeplearning.ARobotSession:CreateConv2D(input_dim, output_dim, kernel_
 	return ADeeplearning.ARobotConv2D(self._graph, conv2d)
 end
 
+function ADeeplearning.ARobotSession:CreateLstm(num_lstm, input_dim, hidden_dim, ln_lstm)
+	local lstm = carp.CarpRobotLstm(self._model, num_lstm, input_dim, hidden_dim, ln_lstm)
+	return ADeeplearning.ARobotLstm(self._graph, lstm)
+end
+
+function ADeeplearning.ARobotSession:CreateBiLstm(num_lstm, input_dim, hidden_dim, ln_lstm)
+	local l2r_lstm = carp.CarpRobotLstm(self._model, num_lstm, input_dim, ALittle.Math_Floor(hidden_dim / 2), ln_lstm)
+	local r2l_lstm = carp.CarpRobotLstm(self._model, num_lstm, input_dim, ALittle.Math_Floor(hidden_dim / 2), ln_lstm)
+	return ADeeplearning.ARobotBiLstm(self._graph, l2r_lstm, r2l_lstm)
+end
+
 end

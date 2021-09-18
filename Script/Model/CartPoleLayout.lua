@@ -37,7 +37,7 @@ function ADeeplearning.CartPoleLayout:Ctor()
 end
 
 function ADeeplearning.CartPoleLayout:TCtor()
-	self._model = ADeeplearning.ARobotDqnDnnModel(4, 2, 100, 1000, 2)
+	self._model = ADeeplearning.ARobotDqnDnnModel(4, 2, 100, 1000, 3)
 	self._learn_theta_threshold_radians = 12 * 2 * 3.14159265 / 360
 	self._total_mass = self._masscart + self._masspole
 	self._polemass_length = self._masspole * self._polemass_length

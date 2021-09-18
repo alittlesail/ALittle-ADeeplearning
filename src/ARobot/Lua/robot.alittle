@@ -15,6 +15,7 @@ public class CarpRobotComputationGraph
     public fun AsScalar(int index) : double {}
     public fun AsVectorAndArgmax(int index) : int {}
     public fun AsVectorAndMaxValue(int index) : double {}
+    public fun AsVectorAndGetValue(int expr_index, int index) : double {}
     public fun GetDim(int index) : CarpRobotDim {}
 
     public fun Negate(int index) : int {}
@@ -42,6 +43,7 @@ public class CarpRobotComputationGraph
     public fun Reshape(int index, int dim_0, int dim_1, int dim_2) : int { }
     public fun PickElement(int index, carp.CarpRobotLabel value, int dim) : int { }
     public fun MeanElements(int index, int dim) : int { }
+    public fun Concatenate(int index, int expr_0, int expr_1, int expr_2) : int { }
 }
 
 public class CarpRobotParameterCollection
@@ -90,11 +92,32 @@ public class CarpRobotConv2D
     public fun Calc(CarpRobotComputationGraph graph, int input) : int { }
 }
 
+public class CarpRobotLstm
+{
+    public ctor(CarpRobotParameterCollection model, int num_lstm, int input_dim, int hidden_dim, bool ln_lstm) { }
+
+    public fun Build(CarpRobotComputationGraph graph, bool update) { }
+    public fun SetDropoutRate(double value) { }
+    public fun SetDropoutRateH(double value) { }
+    public fun AddInput(CarpRobotComputationGraph graph, int input_index) : int { }
+}
+
 public class CarpRobotMnist
 {
     public fun Load(string root_path) : bool { }
     public fun GetImage(int index, CarpRobotInput input) : bool { }
     public fun GetLabel(int index) : int { }
+    public fun GetCount() : int { }
+}
+
+public class CarpRobotMFCC
+{
+    // wav_path 文件路径
+    // param_count取MFCC前多少个参数
+    public fun Load(string wav_path, int param_count) : bool { }
+    // 将参数填充到input
+    public fun GetMFCC(int index, CarpRobotInput input) : bool { }
+    // 获取参数个数
     public fun GetCount() : int { }
 }
 
