@@ -174,7 +174,7 @@ function ADeeplearning.ARobotDuelingDqnCnn:Ctor(session, input_width, input_heig
 	___rawset(self, "_conv2d_list", {})
 	local last_input_dim = 1
 	for index, dim in ___ipairs(conv2d_dim_list) do
-		local conv2d = session:CreateConv2D(last_input_dim, dim, 2, 2, 1, 1, false)
+		local conv2d = session:CreateConv2D(last_input_dim, dim, 3, 3, 1, 1, false)
 		self._conv2d_list[index] = conv2d
 		last_input_dim = dim
 	end
@@ -214,7 +214,7 @@ function ADeeplearning.ARobotDqnCnn:Ctor(session, input_width, input_height, act
 	___rawset(self, "_conv2d_list", {})
 	local last_input_dim = 1
 	for index, dim in ___ipairs(conv2d_dim_list) do
-		local conv2d = session:CreateConv2D(last_input_dim, dim, 2, 2, 1, 1, false)
+		local conv2d = session:CreateConv2D(last_input_dim, dim, 3, 3, 1, 1, false)
 		self._conv2d_list[index] = conv2d
 		last_input_dim = dim
 	end

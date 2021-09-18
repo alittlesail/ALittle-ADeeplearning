@@ -237,7 +237,7 @@ public class ARobotDuelingDqnCnn : IARobotDqn
         var last_input_dim = 1;
         for (var index, dim in conv2d_dim_list)
         {
-            var conv2d = session.CreateConv2D(last_input_dim, dim, 2, 2, 1, 1, false);
+            var conv2d = session.CreateConv2D(last_input_dim, dim, 3, 3, 1, 1, false);
             this._conv2d_list[index] = conv2d;
             last_input_dim = dim;
         }
@@ -294,7 +294,7 @@ public class ARobotDqnCnn : IARobotDqn
         var last_input_dim = 1;
         for (var index, dim in conv2d_dim_list)
         {
-            var conv2d = session.CreateConv2D(last_input_dim, dim, 2, 2, 1, 1, false);
+            var conv2d = session.CreateConv2D(last_input_dim, dim, 3, 3, 1, 1, false);
             this._conv2d_list[index] = conv2d;
             last_input_dim = dim;
         }
