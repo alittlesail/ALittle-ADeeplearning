@@ -55,6 +55,45 @@ protected class CartPoleLayout : ALittle.DisplayLayout
 
     private fun HandleStartGameClick(ALittle.UIClickEvent event)
     {
+        var a = new deeplearning.DeeplearningYolov3();
+        var path = ALittle.File_GetCurrentPath().."/"..g_ModuleBasePath.."Other/";
+        ALittle.Log(a.Load(path.."yolov3.cfg", path.."yolov3.weights"));
+        var surface = carp.LoadCarpSurface(path.."test.jpg");
+        var address = carp.GetCarpSurfaceAddress(surface);
+        ALittle.Log(address);
+        var result = a.Predict(address);
+        ALittle.Log(ALittle.String_JsonEncode(result));
+
+        var lay = new ALittle.DisplayLayout(g_Control);
+        
+        var image = new ALittle.Image(g_Control);
+        image.SetTextureCut(path.."test.jpg", 0, 0, false);
+        image.width = 720;
+        image.height = 540;
+
+        lay.width = image.width;
+        lay.height = image.height;
+        lay.AddChild(image);
+
+        for (var index, range in result)
+        {
+            if (range.clazz >= 0)
+            {
+                var quad = new ALittle.Quad(g_Control);
+                quad.red = 1;
+                quad.green = 0;
+                quad.blue = 0;
+                quad.alpha = 0.5;
+                quad.x = range.x;
+                quad.y = range.y;
+                quad.width = range.w;
+                quad.height = range.h;
+                lay.AddChild(quad);
+            }
+        }
+
+        g_GCenter._main_layer.AddChild(lay);
+
         if (!this._loaded)
         {
             this._model.Load(g_ModuleBasePath.."Other/cartpole.model");

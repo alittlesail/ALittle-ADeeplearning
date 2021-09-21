@@ -38,6 +38,7 @@ function ADeeplearning.__Module_Setup(layer_group, control, module_base_path, sc
 		package.cpath = package.cpath .. ";./" .. module_base_path .. "Other/?.dll"
 		local path = ALittle.File_GetCurrentPath()
 		ALittle.File_SetCurrentPath(path .. "/" .. module_base_path .. "Other")
+		require("robot")
 		require("deeplearning")
 		ALittle.File_SetCurrentPath(path)
 	end

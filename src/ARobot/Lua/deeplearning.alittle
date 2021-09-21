@@ -1,0 +1,18 @@
+
+register namespace deeplearning;
+
+public struct Yolov3Box
+{
+    int x;
+    int y;
+    int w;
+    int h;
+    int clazz;
+    double prob;
+}
+
+public class DeeplearningYolov3
+{
+    public fun Load(string cfg_path, string weight_path) : bool { }
+    public fun Predict(int surface_address) : List<Yolov3Box> { }
+}

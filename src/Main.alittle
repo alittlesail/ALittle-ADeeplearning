@@ -51,6 +51,7 @@ public async static __Module_Setup(ALittle.DisplayLayout layer_group, ALittle.Co
 		package.cpath = package.cpath..";./"..module_base_path.."Other/?.dll";
         var path = ALittle.File_GetCurrentPath();
         ALittle.File_SetCurrentPath(path.."/"..module_base_path.."Other");
+        lua.require("robot");
         lua.require("deeplearning");
         ALittle.File_SetCurrentPath(path);
     }

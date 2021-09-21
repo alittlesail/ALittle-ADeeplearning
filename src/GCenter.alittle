@@ -5,7 +5,7 @@ protected var g_GConfig:ALittle.IJsonConfig;
 
 protected class GCenter
 {
-    private ALittle.DisplayLayout _main_layer;
+    public ALittle.DisplayLayout _main_layer;
     private ALittle.DisplayLayout _dialog_layer;
 
     public fun Setup()
