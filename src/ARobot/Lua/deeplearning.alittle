@@ -11,7 +11,7 @@ public struct Yolov3Box
     double prob;
 }
 
-public class DeeplearningYolov3
+public class DeeplearningDarknet
 {
     public fun Load(string cfg_path, string weight_path) : bool { }
     public fun Predict(int surface_address) : List<Yolov3Box> { }

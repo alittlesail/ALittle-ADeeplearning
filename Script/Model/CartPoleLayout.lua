@@ -45,37 +45,6 @@ function ADeeplearning.CartPoleLayout:TCtor()
 end
 
 function ADeeplearning.CartPoleLayout:HandleStartGameClick(event)
-	local a = deeplearning.DeeplearningYolov3()
-	local path = ALittle.File_GetCurrentPath() .. "/" .. ADeeplearning.g_ModuleBasePath .. "Other/"
-	ALittle.Log(a:Load(path .. "yolov3.cfg", path .. "yolov3.weights"))
-	local surface = carp.LoadCarpSurface(path .. "test.jpg")
-	local address = carp.GetCarpSurfaceAddress(surface)
-	ALittle.Log(address)
-	local result = a:Predict(address)
-	ALittle.Log(ALittle.String_JsonEncode(result))
-	local lay = ALittle.DisplayLayout(ADeeplearning.g_Control)
-	local image = ALittle.Image(ADeeplearning.g_Control)
-	image:SetTextureCut(path .. "test.jpg", 0, 0, false)
-	image.width = 720
-	image.height = 540
-	lay.width = image.width
-	lay.height = image.height
-	lay:AddChild(image)
-	for index, range in ___ipairs(result) do
-		if range.clazz >= 0 then
-			local quad = ALittle.Quad(ADeeplearning.g_Control)
-			quad.red = 1
-			quad.green = 0
-			quad.blue = 0
-			quad.alpha = 0.5
-			quad.x = range.x
-			quad.y = range.y
-			quad.width = range.w
-			quad.height = range.h
-			lay:AddChild(quad)
-		end
-	end
-	ADeeplearning.g_GCenter._main_layer:AddChild(lay)
 	if not self._loaded then
 		self._model:Load(ADeeplearning.g_ModuleBasePath .. "Other/cartpole.model")
 		self._loaded = true

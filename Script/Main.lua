@@ -50,6 +50,7 @@ function ADeeplearning.__Module_Setup(layer_group, control, module_base_path, sc
 		,{"ARobotSession"}})
 	require:AddPaths(script_base_path, "Model/", {{"CartPoleLayout"}
 		,{"CommonTrainLayout"}
+		,{"DarknetLayout"}
 		,{"MnistLayout","CommonTrainLayout"}
 		,{"XorLayout","CommonTrainLayout"}})
 	require:Start()
@@ -96,6 +97,7 @@ function ADeeplearning.__Plugin_Setup(control, module_base_path, script_base_pat
 		,{"ARobotSession"}})
 	require:AddPaths(script_base_path, "Model/", {{"CartPoleLayout"}
 		,{"CommonTrainLayout"}
+		,{"DarknetLayout"}
 		,{"MnistLayout","CommonTrainLayout"}
 		,{"XorLayout","CommonTrainLayout"}})
 	require:Start()

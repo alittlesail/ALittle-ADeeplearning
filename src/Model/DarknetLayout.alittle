@@ -1,0 +1,87 @@
+
+namespace ADeeplearning;
+
+protected class DarknetLayout : ALittle.DisplayLayout
+{
+    deeplearning.DeeplearningDarknet _model;
+    ALittle.DisplayLayout _container;
+
+    private fun HandleDropFile(ALittle.UIDropFileEvent event)
+    {
+        this.Do(event.path);
+    }
+
+    private fun HandleSelectFileClick(ALittle.UISystemSelectFileEvent event)
+    {
+        this.Do(event.path);
+    }
+    
+    private fun Do(string file_path)
+    {
+        if (this._model == null)
+        {
+            this._model = new deeplearning.DeeplearningDarknet();
+            var path = ALittle.File_GetCurrentPath().."/"..g_ModuleBasePath.."Other/";
+            this._model.Load(path.."yolov3-tiny.cfg", path.."yolov3-tiny.weights");
+        }
+        var surface = carp.LoadCarpSurface(file_path);
+        if (surface == null)
+        {
+            g_AUITool.ShowNotice("错误", "图片加载失败");
+            return;
+        }
+        var surface_width = carp.GetCarpSurfaceWidth(surface);
+        var surface_height = carp.GetCarpSurfaceHeight(surface);
+        var address = carp.GetCarpSurfaceAddress(surface);
+        var box_list = this._model.Predict(address);
+        if (box_list == null)
+        {
+            g_AUITool.ShowNotice("错误", "图片识别失败");
+            return;
+        }
+        this._container.RemoveAllChild();
+
+        var max_width = this._container.width;
+        var max_height = this._container.height;
+
+        var adjust_width = surface_width;
+        var adjust_height = surface_height;
+		if (surface_width > max_width || surface_height > max_height)
+    	{
+            var scale_x = max_width / surface_width;
+            var scale_y = max_height / surface_height;
+
+            var max_scale = scale_x;
+            if (max_scale > scale_y) max_scale = scale_y;
+        
+            adjust_width = ALittle.Math_Floor(max_scale * surface_width);
+            if (adjust_width == 0) adjust_width = 1;
+            adjust_height = ALittle.Math_Floor(max_scale * surface_height);
+            if (adjust_height == 0) adjust_height = 1;
+        }
+        var adjust_scale = adjust_width /  surface_width;
+        var adjust_x = (max_width - adjust_width) / 2;
+        var adjust_y = (max_height - adjust_height) / 2;
+
+        var image = new ALittle.Image(g_Control);
+        image.SetTextureCut(file_path, ALittle.Math_Floor(max_width), ALittle.Math_Floor(max_height), false);
+        image.width = adjust_width;
+        image.height = adjust_height;
+        image.x = adjust_x;
+        image.y = adjust_y;
+        this._container.AddChild(image);
+
+        for (var index, range in box_list)
+        {
+            if (range.clazz >= 0)
+            {
+                var quad = g_AUIPluinControl.CreateControl{ALittle.DisplayObject}("aui_frame_quad");
+                quad.x = range.x * adjust_scale + adjust_x;
+                quad.y = range.y * adjust_scale + adjust_y;
+                quad.width = range.w * adjust_scale;
+                quad.height = range.h * adjust_scale;
+                this._container.AddChild(quad);
+            }
+        }
+    }
+}
