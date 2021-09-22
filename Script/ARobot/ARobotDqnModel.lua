@@ -94,8 +94,14 @@ function ADeeplearning.ARobotDqnModel:SaveTransition(state, next_state, action, 
 	self._state:Update(state)
 	self._next_state:Update(next_state)
 	self._action:Update(action)
-	local q_target = reward + 0.9 * self._q_next:AsVectorAndMaxValue()
-	self._target:Update({q_target})
+	if self._model_type == 3 then
+		local next_action = self._target_q_next:AsVectorAndArgmax()
+		local q_target = reward + 0.9 * self._q_next:AsVectorAndGetValue(next_action)
+		self._target:Update({q_target})
+	else
+		local q_target = reward + 0.9 * self._target_q_next:AsVectorAndMaxValue()
+		self._target:Update({q_target})
+	end
 	local loss = self._loss:AsScalar()
 	return self._sum_tree:SaveMemory(state, next_state, action, reward, loss)
 end

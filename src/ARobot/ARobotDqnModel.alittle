@@ -117,8 +117,17 @@ public class ARobotDqnModel
         this._next_state.Update(next_state);
         this._action.Update(action);
     
-        var q_target = reward + 0.9 * this._q_next.AsVectorAndMaxValue();
-        this._target.Update([q_target]);
+        if (this._model_type == ARobotDqnTypes.DOUBLE)
+        {
+            var next_action = this._target_q_next.AsVectorAndArgmax();
+            var q_target = reward + 0.9 * this._q_next.AsVectorAndGetValue(next_action);
+            this._target.Update([q_target]);
+        }
+        else
+        {
+            var q_target = reward + 0.9 * this._target_q_next.AsVectorAndMaxValue();
+            this._target.Update([q_target]);
+        }
 
         var loss = this._loss.AsScalar();
 
