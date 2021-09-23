@@ -34,6 +34,7 @@ function ADeeplearning.DarknetLayout:Do(file_path)
 	local surface_height = carp.GetCarpSurfaceHeight(surface)
 	local address = carp.GetCarpSurfaceAddress(surface)
 	local box_list = self._model:Predict(address)
+	carp.FreeCarpSurface(surface)
 	if box_list == nil then
 		g_AUITool:ShowNotice("错误", "图片识别失败")
 		return
