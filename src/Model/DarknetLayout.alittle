@@ -34,6 +34,7 @@ protected class DarknetLayout : ALittle.DisplayLayout
         var surface_height = carp.GetCarpSurfaceHeight(surface);
         var address = carp.GetCarpSurfaceAddress(surface);
         var box_list = this._model.Predict(address);
+        carp.FreeCarpSurface(surface);
         if (box_list == null)
         {
             g_AUITool.ShowNotice("错误", "图片识别失败");
