@@ -1,0 +1,138 @@
+
+namespace ADeeplearning;
+
+protected class OpenCVLayout : ALittle.DisplayLayout
+{
+    deeplearning.DeeplearningDarknet _model;
+    ALittle.DisplayLayout _container;
+    ALittle.DisplayLayout _quad_container;
+    carp.CarpVideoCapture _cap;
+    ALittle.LoopFrame _loop_frame;
+
+    carp.CarpSurface _grab;
+    
+    ALittle.DynamicImage _image;
+
+    public fun TCtor()
+    {
+        this._image = new ALittle.DynamicImage(g_Control);
+        this._image.width = this._container.width;
+        this._image.height = this._container.height;
+
+        var out_width = ALittle.Math_Floor(this._container.width);
+        var out_height = ALittle.Math_Floor(this._container.height);
+        
+        this._image.SetSurfaceSize(out_width, out_height, 0);
+        this._container.AddChild(this._image);
+    }
+
+    private fun HandleStartClick(ALittle.UIClickEvent event)
+    {
+        if (this._cap != null) return;
+
+        var out_width = ALittle.Math_Floor(this._image.width);
+        var out_height = ALittle.Math_Floor(this._image.height);
+
+        this._cap = carp.CreateCarpVideoCapture();
+        if (!carp.OpenCarpVideoCamera(this._cap, 0, out_width, out_height, 0))
+        {
+            g_AUITool.ShowNotice("错误", "摄像头打开失败");
+            carp.FreeCarpVideoCapture(this._cap);
+            this._cap = null;
+            return;
+        }
+
+        if (this._loop_frame == null)
+        {
+            this._loop_frame = new ALittle.LoopFrame(bind(this.HandleFrame, this));
+            this._loop_frame.Start();
+        }
+
+        var width = carp.GetCarpVideoCameraWidth(this._cap);
+        var height = carp.GetCarpVideoCameraHeight(this._cap);
+        
+        if (out_width != width || out_height != height)
+        	this._grab = carp.CreateCarpSurface(width, height);
+    }
+
+    private fun HandleCloseClick(ALittle.UIClickEvent event)
+    {
+        if (this._grab != null) carp.FreeCarpSurface(this._grab);
+        this._grab = null;
+
+        if (this._loop_frame != null)
+        {
+            this._loop_frame.Stop();
+            this._loop_frame = null;
+        }
+        if (this._cap == null) return;
+
+        carp.CloseCarpVideoCamera(this._cap);
+        carp.FreeCarpVideoCapture(this._cap);
+        this._cap = null;
+    }
+
+    private fun HandleFrame(int frame_time)
+    {
+        if (this._model == null)
+        {
+            this._model = new deeplearning.DeeplearningDarknet();
+            var path = ALittle.File_GetCurrentPath().."/"..g_ModuleBasePath.."Other/";
+            this._model.Load(path.."yolov3-tiny.cfg", path.."yolov3-tiny.weights");
+        }
+
+        if (this._grab != null)
+        {
+            var result = carp.GetCarpVideoCameraFrame(this._cap, carp.GetCarpSurfaceAddress(this._grab));
+            carp.CutBlitCarpSurface(this._grab, this._image.GetSurface(false), null, null);
+        }
+        else
+        {
+            carp.GetCarpVideoCameraFrame(this._cap, carp.GetCarpSurfaceAddress(this._image.GetSurface(false)));
+        }
+        var surface = this._image.GetSurface(true);
+
+        var surface_width = carp.GetCarpSurfaceWidth(surface);
+        var surface_height = carp.GetCarpSurfaceHeight(surface);
+        var address = carp.GetCarpSurfaceAddress(surface);
+        var box_list = this._model.Predict(address);
+        if (box_list == null) return;
+
+        this._quad_container.RemoveAllChild();
+
+        var max_width = this._container.width;
+        var max_height = this._container.height;
+
+        var adjust_width = surface_width;
+        var adjust_height = surface_height;
+		if (surface_width > max_width || surface_height > max_height)
+    	{
+            var scale_x = max_width / surface_width;
+            var scale_y = max_height / surface_height;
+
+            var max_scale = scale_x;
+            if (max_scale > scale_y) max_scale = scale_y;
+        
+            adjust_width = ALittle.Math_Floor(max_scale * surface_width);
+            if (adjust_width == 0) adjust_width = 1;
+            adjust_height = ALittle.Math_Floor(max_scale * surface_height);
+            if (adjust_height == 0) adjust_height = 1;
+        }
+        var adjust_scale = adjust_width /  surface_width;
+        var adjust_x = (max_width - adjust_width) / 2;
+        var adjust_y = (max_height - adjust_height) / 2;
+
+        for (var index, range in box_list)
+        {
+            if (range.clazz >= 0)
+            {
+                var quad = g_AUIPluinControl.CreateControl{ALittle.DisplayObject}("aui_frame_quad");
+                quad.x = range.x * adjust_scale + adjust_x;
+                quad.y = range.y * adjust_scale + adjust_y;
+                quad.width = range.w * adjust_scale;
+                quad.height = range.h * adjust_scale;
+                this._quad_container.AddChild(quad);
+            }
+        }
+    }
+}

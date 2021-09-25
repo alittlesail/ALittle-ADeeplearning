@@ -1,0 +1,13 @@
+
+register namespace carp;
+
+public class CarpVideoCapture { }
+
+public static CreateCarpVideoCapture() : CarpVideoCapture { }
+public static FreeCarpVideoCapture(CarpVideoCapture cap) { }
+public static GetCarpVideoCameraWidth(CarpVideoCapture cap) : int { }
+public static GetCarpVideoCameraHeight(CarpVideoCapture cap) : int { }
+public static OpenCarpVideoCamera(CarpVideoCapture cap, int index, int width, int height, int channels) : bool { }
+public static IsOpenCarpVideoCamera(CarpVideoCapture cap) : bool { }
+public static CloseCarpVideoCamera(CarpVideoCapture cap) { }
+public static GetCarpVideoCameraFrame(CarpVideoCapture cap, int surface_address) : bool { }

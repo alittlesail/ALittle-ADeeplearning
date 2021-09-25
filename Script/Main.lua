@@ -40,6 +40,7 @@ function ADeeplearning.__Module_Setup(layer_group, control, module_base_path, sc
 		ALittle.File_SetCurrentPath(path .. "/" .. module_base_path .. "Other")
 		require("robot")
 		require("deeplearning")
+		require("opencv")
 		ALittle.File_SetCurrentPath(path)
 	end
 	local require = ALittle.Require()
@@ -52,6 +53,7 @@ function ADeeplearning.__Module_Setup(layer_group, control, module_base_path, sc
 		,{"CommonTrainLayout"}
 		,{"DarknetLayout"}
 		,{"MnistLayout","CommonTrainLayout"}
+		,{"OpenCVLayout"}
 		,{"XorLayout","CommonTrainLayout"}})
 	require:Start()
 	Require(script_base_path, "GCenter")
@@ -87,6 +89,7 @@ function ADeeplearning.__Plugin_Setup(control, module_base_path, script_base_pat
 		ALittle.File_SetCurrentPath(path .. "/" .. module_base_path .. "Other")
 		require("robot")
 		require("deeplearning")
+		require("opencv")
 		ALittle.File_SetCurrentPath(path)
 	end
 	local require = ALittle.Require()
@@ -99,6 +102,7 @@ function ADeeplearning.__Plugin_Setup(control, module_base_path, script_base_pat
 		,{"CommonTrainLayout"}
 		,{"DarknetLayout"}
 		,{"MnistLayout","CommonTrainLayout"}
+		,{"OpenCVLayout"}
 		,{"XorLayout","CommonTrainLayout"}})
 	require:Start()
 end

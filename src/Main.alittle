@@ -53,6 +53,7 @@ public async static __Module_Setup(ALittle.DisplayLayout layer_group, ALittle.Co
         ALittle.File_SetCurrentPath(path.."/"..module_base_path.."Other");
         lua.require("robot");
         lua.require("deeplearning");
+        lua.require("opencv");
         ALittle.File_SetCurrentPath(path);
     }
 
@@ -102,6 +103,7 @@ public await static __Plugin_Setup(ALittle.ControlSystem control, string module_
         ALittle.File_SetCurrentPath(path.."/"..module_base_path.."Other");
         lua.require("robot");
         lua.require("deeplearning");
+        lua.require("opencv");
         ALittle.File_SetCurrentPath(path);
     }
 
