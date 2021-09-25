@@ -1,5 +1,5 @@
 
-register namespace deeplearning;
+register namespace carp;
 
 public struct Yolov3Box
 {
@@ -11,7 +11,7 @@ public struct Yolov3Box
     double prob;
 }
 
-public class DeeplearningDarknet
+public class CarpDarknet
 {
     public fun Load(string cfg_path, string weight_path) : bool { }
     public fun Predict(int surface_address) : List<Yolov3Box> { }

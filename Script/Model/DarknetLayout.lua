@@ -21,7 +21,7 @@ end
 
 function ADeeplearning.DarknetLayout:Do(file_path)
 	if self._model == nil then
-		self._model = deeplearning.DeeplearningDarknet()
+		self._model = carp.CarpDarknet()
 		local path = ALittle.File_GetCurrentPath() .. "/" .. ADeeplearning.g_ModuleBasePath .. "Other/"
 		self._model:Load(path .. "yolov3-tiny.cfg", path .. "yolov3-tiny.weights")
 	end

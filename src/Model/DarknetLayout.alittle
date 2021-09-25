@@ -3,7 +3,7 @@ namespace ADeeplearning;
 
 protected class DarknetLayout : ALittle.DisplayLayout
 {
-    deeplearning.DeeplearningDarknet _model;
+    carp.CarpDarknet _model;
     ALittle.DisplayLayout _container;
 
     private fun HandleDropFile(ALittle.UIDropFileEvent event)
@@ -20,7 +20,7 @@ protected class DarknetLayout : ALittle.DisplayLayout
     {
         if (this._model == null)
         {
-            this._model = new deeplearning.DeeplearningDarknet();
+            this._model = new carp.CarpDarknet();
             var path = ALittle.File_GetCurrentPath().."/"..g_ModuleBasePath.."Other/";
             this._model.Load(path.."yolov3-tiny.cfg", path.."yolov3-tiny.weights");
         }

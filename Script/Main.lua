@@ -39,7 +39,7 @@ function ADeeplearning.__Module_Setup(layer_group, control, module_base_path, sc
 		local path = ALittle.File_GetCurrentPath()
 		ALittle.File_SetCurrentPath(path .. "/" .. module_base_path .. "Other")
 		require("robot")
-		require("deeplearning")
+		require("adarknet")
 		require("opencv")
 		ALittle.File_SetCurrentPath(path)
 	end
@@ -88,7 +88,7 @@ function ADeeplearning.__Plugin_Setup(control, module_base_path, script_base_pat
 		local path = ALittle.File_GetCurrentPath()
 		ALittle.File_SetCurrentPath(path .. "/" .. module_base_path .. "Other")
 		require("robot")
-		require("deeplearning")
+		require("adarknet")
 		require("opencv")
 		ALittle.File_SetCurrentPath(path)
 	end
